@@ -1,7 +1,7 @@
-commit: 6285b73b16f3d930e7017e8188e9936eac1d9f1f
+commit: 800edb9254aa08d91657d0593f6fb78f2e3c1388
 ref: master
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40241356576
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40241697192
 
 ## Kotlin compile errors (e: lines)
 
@@ -48,7 +48,7 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 3m
+BUILD SUCCESSFUL in 3m 9s
 82 actionable tasks: 82 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.1/userguide/configuration_cache_enabling.html
 
@@ -73,8 +73,8 @@ Consider enabling configuration cache to speed up this build: https://docs.gradl
 > Task :app:javaPreCompilePlaystoreDebug UP-TO-DATE
 > Task :app:compilePlaystoreDebugJavaWithJavac UP-TO-DATE
 > Task :app:prePlaystoreDebugUnitTestBuild UP-TO-DATE
-> Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
 > Task :app:javaPreCompilePlaystoreDebugUnitTest
+> Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
 > Task :app:bundlePlaystoreDebugClassesToRuntimeJar
 > Task :app:bundlePlaystoreDebugClassesToCompileJar
 > Task :app:compilePlaystoreDebugUnitTestKotlin
