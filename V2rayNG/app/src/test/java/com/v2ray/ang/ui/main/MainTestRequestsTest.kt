@@ -26,10 +26,10 @@ class MainTestRequestsTest {
     @Test
     fun stopAndRestartInvalidateThePreviousConnectionRequest() {
         val requests = MainTestRequests()
-        val stopped = requests.beginCurrent()
+        val stopped = requests.beginCurrent()!!
         requests.invalidateCurrent()
         assertFalse(requests.completeCurrent(stopped))
-        val restarted = requests.beginCurrent()
+        val restarted = requests.beginCurrent()!!
         assertFalse(requests.completeCurrent(stopped))
         assertTrue(requests.completeCurrent(restarted))
     }
