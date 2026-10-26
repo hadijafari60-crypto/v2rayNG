@@ -228,12 +228,6 @@ class HealthyManager(
      * cancel or start any test.
      */
     fun connectToFastestKnown(excludeGuid: String? = null) {
-        if (refreshActive) {
-            // Record the user's choice synchronously so refresh cannot race ahead
-            // and replace it while the fallback lookup is running.
-            connectionChosenDuringRefresh = true
-            autoConnectOnFirstGood = false
-        }
         scope.launch {
             val fastest = withContext(io) {
                 val excludedIdentity = excludeGuid?.let {
@@ -259,6 +253,13 @@ class HealthyManager(
             if (fastest == null) {
                 log("Test active; no previously tested fast server is available")
                 return@launch
+            }
+            if (refreshActive) {
+                // Once a usable fallback is found, keep refresh auto-connect from
+                // replacing it. If no known server exists, refresh may still connect
+                // to the first successful result as usual.
+                connectionChosenDuringRefresh = true
+                autoConnectOnFirstGood = false
             }
             log("Test active; connecting to the fastest known server")
             host.connectToServer(fastest)
