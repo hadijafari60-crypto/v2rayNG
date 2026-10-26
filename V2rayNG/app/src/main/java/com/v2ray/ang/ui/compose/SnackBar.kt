@@ -36,8 +36,6 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 
 enum class ToastType {
     NORMAL, SUCCESS, ERROR, INFO
@@ -80,11 +78,11 @@ class AppSnackbarController(
     private val scope: CoroutineScope,
 ) {
     // Serialize messages so a new event waits for the current snackbar to finish.
-    private val messageMutex = Mutex()
+    private val messageQueue = SnackbarSerialQueue()
 
     fun show(message: CharSequence, type: ToastType = ToastType.NORMAL, long: Boolean = false) {
         scope.launch {
-            messageMutex.withLock {
+            messageQueue.run {
                 hostState.showSnackbar(
                     AppSnackbarVisuals(
                         message = message.toString(),
