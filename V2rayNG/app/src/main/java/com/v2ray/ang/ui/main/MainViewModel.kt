@@ -134,12 +134,12 @@ class MainViewModel(
 
     /** Server-row taps during a test are redirected to the fastest known good server. */
     fun selectServer(guid: String) {
-        if (guid == uiState.value.selectedGuid) return
         if (healthy.isOperationBusy()) {
             toast(R.string.toast_test_in_progress)
             healthy.connectToFastestKnown(excludeGuid = guid)
             return
         }
+        if (guid == uiState.value.selectedGuid) return
         connectToServer(guid)
     }
 
