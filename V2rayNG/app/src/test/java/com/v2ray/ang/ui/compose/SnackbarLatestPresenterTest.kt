@@ -1,5 +1,9 @@
 package com.v2ray.ang.ui.compose
 
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.test.runCurrent
@@ -38,7 +42,7 @@ class SnackbarLatestPresenterTest {
         )
     } 
     @Test
-    fun burstKeepsOnlyLatestRequestAndWaitsForPreviousCleanup() = runTest {
+    fun burstDuringCancellationCleanupSkipsSupersededRequests() = runTest {
         val presenter = SnackbarLatestPresenter(backgroundScope)
         val events = mutableListOf<String>()
         val firstStarted = CompletableDeferred<Unit>()
@@ -49,17 +53,23 @@ class SnackbarLatestPresenterTest {
             try {
                 awaitCancellation()
             } finally {
-                events += "first-cleanup"
+                withContext(NonCancellable) {
+                    delay(100)
+                    events += "first-cleanup"
+                }
             }
         }
         runCurrent()
         firstStarted.await()
 
         presenter.show { events += "superseded" }
+        runCurrent()
+        assertEquals(listOf("first-start"), events)
+
         presenter.show { events += "latest" }
+        advanceTimeBy(100)
         runCurrent()
 
         assertEquals(listOf("first-start", "first-cleanup", "latest"), events)
     }
-
 }

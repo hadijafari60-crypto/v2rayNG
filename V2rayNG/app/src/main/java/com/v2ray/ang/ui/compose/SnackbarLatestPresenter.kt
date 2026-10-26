@@ -16,9 +16,17 @@ class SnackbarLatestPresenter(scope: CoroutineScope) {
     init {
         scope.launch {
             var active: Job? = null
-            for (request in requests) {
+            for (firstRequest in requests) {
                 active?.cancelAndJoin()
-                active = launch { request() }
+
+                // A newer event may arrive while the previous snackbar is cleaning up. Drain the
+                // conflated channel after cleanup so an obsolete intermediate message is not shown.
+                var latestRequest = firstRequest
+                while (true) {
+                    val queued = requests.tryReceive().getOrNull() ?: break
+                    latestRequest = queued
+                }
+                active = launch { latestRequest() }
             }
         }
     }
