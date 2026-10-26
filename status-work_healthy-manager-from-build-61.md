@@ -1,7 +1,7 @@
-commit: 03f8e77cdf58e1c8dc3dd5994dc2371aee0c8f4d
+commit: 8c77ee62e82e90152523692d65c11c80aee381db
 ref: work/healthy-manager-from-build-61
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40397420281
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40397457876
 
 ## Kotlin compile errors (e: lines)
 
@@ -12,9 +12,9 @@ tests="18" skipped="0" failures="0" errors="0"
 tests="5" skipped="0" failures="0" errors="0"
 
 ## Last 40 lines of build.log
+> Task :app:compilePlaystoreDebugKotlin
 > Task :app:dexBuilderFdroidDebug
 > Task :app:mergeProjectDexFdroidDebug
-> Task :app:compilePlaystoreDebugKotlin
 > Task :app:packageFdroidDebug
 > Task :app:createFdroidDebugApkListingFileRedirect
 > Task :app:assembleFdroidDebug
@@ -49,7 +49,7 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 2m 22s
+BUILD SUCCESSFUL in 2m 33s
 82 actionable tasks: 82 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
 
@@ -74,10 +74,10 @@ Consider enabling configuration cache to speed up this build: https://docs.gradl
 > Task :app:javaPreCompilePlaystoreDebug UP-TO-DATE
 > Task :app:compilePlaystoreDebugJavaWithJavac UP-TO-DATE
 > Task :app:prePlaystoreDebugUnitTestBuild UP-TO-DATE
-> Task :app:javaPreCompilePlaystoreDebugUnitTest
 > Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
-> Task :app:bundlePlaystoreDebugClassesToCompileJar
+> Task :app:javaPreCompilePlaystoreDebugUnitTest
 > Task :app:bundlePlaystoreDebugClassesToRuntimeJar
+> Task :app:bundlePlaystoreDebugClassesToCompileJar
 > Task :app:compilePlaystoreDebugUnitTestKotlin
 > Task :app:compilePlaystoreDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :app:processPlaystoreDebugUnitTestJavaRes
