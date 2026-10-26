@@ -142,7 +142,7 @@ class MainViewModel(
             override val selectedGuid: String?
                 get() = uiState.value.selectedGuid
             override val hasBulkTest: Boolean
-                get() = testRequests.bulk != null
+                get() = testRequests.isTesting
 
             override fun isBulkTest(requestId: String): Boolean =
                 testRequests.bulk?.id == requestId
@@ -155,11 +155,16 @@ class MainViewModel(
             }
 
             override fun startCurrentServerTest() {
-                testCurrentServerRealPing()
+                startCurrentServerTest(MainTestRequests.CurrentOwner.GUARD)
             }
 
             override fun cancelAllTests() {
-                cancelAllPing()
+                // A guard timeout must never cancel a newer manual or bulk test.
+                if (testRequests.currentOwner == MainTestRequests.CurrentOwner.GUARD &&
+                    testRequests.bulk == null
+                ) {
+                    cancelAllPing()
+                }
             }
 
             override suspend fun reloadGroups() {
@@ -995,8 +1000,12 @@ class MainViewModel(
     }
 
     fun testCurrentServerRealPing() {
+        startCurrentServerTest(MainTestRequests.CurrentOwner.MANUAL)
+    }
+
+    private fun startCurrentServerTest(owner: MainTestRequests.CurrentOwner) {
         if (!uiState.value.isRunning) return
-        val requestId = testRequests.beginCurrent()
+        val requestId = testRequests.beginCurrent(owner) ?: return
         _uiState.update { it.copy(isTesting = true, status = MainStatus.Testing) }
         dataSource.testCurrentServerRealPing(requestId)
     }
