@@ -31,12 +31,13 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
-import com.v2ray.ang.extension.delay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 enum class ToastType {
     NORMAL, SUCCESS, ERROR, INFO
@@ -78,22 +79,12 @@ class AppSnackbarController(
     val hostState: SnackbarHostState,
     private val scope: CoroutineScope,
 ) {
-    private var currentId = 0
-    private var currentShowTime = 0L
+    // Serialize messages so a new event waits for the current snackbar to finish.
+    private val messageMutex = Mutex()
 
     fun show(message: CharSequence, type: ToastType = ToastType.NORMAL, long: Boolean = false) {
-        val id = ++currentId
         scope.launch {
-            if (currentShowTime != 0L) {
-                val elapsed = System.currentTimeMillis() - currentShowTime
-                if (elapsed < SnackbarThrottleMs) {
-                    delay((SnackbarThrottleMs - elapsed))
-                }
-            }
-
-            hostState.currentSnackbarData?.dismiss()
-
-            launch {
+            messageMutex.withLock {
                 hostState.showSnackbar(
                     AppSnackbarVisuals(
                         message = message.toString(),
@@ -101,12 +92,7 @@ class AppSnackbarController(
                         duration = if (long) SnackbarDuration.Long else SnackbarDuration.Short
                     )
                 )
-                if (id == currentId) {
-                    currentShowTime = 0L
-                }
             }
-
-            currentShowTime = System.currentTimeMillis()
         }
     }
 }
@@ -155,7 +141,6 @@ private val ToastVerticalPad = 12.dp
 private const val ToastMaxLines = 8
 private const val ToastMaxWidthFraction = 0.75f
 private val ToastBottomOffset = 100.dp
-private const val SnackbarThrottleMs = 2000L
 
 @Composable
 fun AppSnackbarHost(
