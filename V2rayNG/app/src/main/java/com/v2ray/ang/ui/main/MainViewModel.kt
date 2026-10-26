@@ -1,8 +1,6 @@
 package com.v2ray.ang.ui.main
 
 import android.app.Application
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -211,14 +209,6 @@ class MainViewModel(
                 false
             }
 
-            override fun copyText(label: String, text: String) {
-                try {
-                    val cm = appContext.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    cm.setPrimaryClip(ClipData.newPlainText(label, text))
-                } catch (e: Exception) {
-                    LogUtil.e(AppConfig.TAG, "Copy to clipboard failed", e)
-                }
-            }
         }
     )
 
@@ -957,6 +947,12 @@ class MainViewModel(
     }
 
     fun testAllRealPing(onlyTcp: Boolean = false) {
+        // Never let a manual bulk test cancel an active Healthy refresh, periodic batch,
+        // or another test. Explicit Cancel Testing remains the only user cancellation path.
+        if (healthy.isOperationBusy() || testRequests.isTesting) {
+            toast(R.string.toast_test_in_progress)
+            return
+        }
         cancelAllPing()
         val groupId = uiState.value.selectedGroupId
         val servers = currentServers()
