@@ -51,15 +51,7 @@ class HealthyManager(
     private val maxHealthy = 50           // max servers kept in the pool
 
     // ---------- Healthy event log ----------
-    private val logLines = ArrayDeque<String>()
-    private val logTime = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.US)
-    private val logMaxLines = 80
-
     private fun log(message: String) {
-        synchronized(logLines) {
-            logLines.addLast("${logTime.format(java.util.Date())} $message")
-            while (logLines.size > logMaxLines) logLines.removeFirst()
-        }
         // Logcat defaults to WARNING, so use warning priority for Healthy diagnostics
         // to make them visible in the in-app Logcat screen without changing preferences.
         LogUtil.w(AppConfig.TAG, "Healthy: $message")
@@ -70,8 +62,6 @@ class HealthyManager(
         log(message)
         host.toast(message)
     }
-
-    fun logText(): String = synchronized(logLines) { logLines.joinToString("\n") }
 
     // ---------- Refresh / fast connect ----------
     private var refreshHealthyJob: Job? = null
