@@ -23,7 +23,7 @@ interface HealthyHost {
     val selectedGuid: String?
     val hasBulkTest: Boolean
     fun isBulkTest(requestId: String): Boolean
-    fun beginBulkTest(groupId: String): String
+    fun beginBulkTest(groupId: String): String?
     fun showTesting()
     fun startCurrentServerTest()
     fun cancelAllTests()
@@ -444,7 +444,7 @@ class HealthyManager(
         val guids = withContext(io) { dataSource.getServerGuidList(groupId) }
         if (guids.isEmpty()) return
         withContext(io) { dataSource.clearAllTestDelayResults(guids) }
-        val requestId = host.beginBulkTest(groupId)
+        val requestId = host.beginBulkTest(groupId) ?: return
         host.showTesting()
         dataSource.sendMsg2TestService(
             TestServiceMessage(
@@ -526,7 +526,7 @@ class HealthyManager(
         periodicRunning = true
         try {
             log("Periodic test of ${batch.size} Healthy servers")
-            val requestId = host.beginBulkTest(healthyId)
+            val requestId = host.beginBulkTest(healthyId) ?: return
             dataSource.sendMsg2TestService(
                 TestServiceMessage(
                     key = AppConfig.MSG_MEASURE_CONFIG_START,

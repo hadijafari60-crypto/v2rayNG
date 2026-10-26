@@ -142,24 +142,29 @@ class MainViewModel(
             override val selectedGuid: String?
                 get() = uiState.value.selectedGuid
             override val hasBulkTest: Boolean
-                get() = testRequests.bulk != null
+                get() = testRequests.isTesting
 
             override fun isBulkTest(requestId: String): Boolean =
                 testRequests.bulk?.id == requestId
 
-            override fun beginBulkTest(groupId: String): String =
-                testRequests.beginBulk(groupId).id
+            override fun beginBulkTest(groupId: String): String? =
+                testRequests.beginBulk(groupId)?.id
 
             override fun showTesting() {
                 _uiState.update { it.copy(isTesting = true, status = MainStatus.Testing) }
             }
 
             override fun startCurrentServerTest() {
-                testCurrentServerRealPing()
+                startCurrentServerTest(MainTestRequests.CurrentOwner.GUARD)
             }
 
             override fun cancelAllTests() {
-                cancelAllPing()
+                // A guard timeout must never cancel a newer manual or bulk test.
+                if (testRequests.currentOwner == MainTestRequests.CurrentOwner.GUARD &&
+                    testRequests.bulk == null
+                ) {
+                    cancelAllPing()
+                }
             }
 
             override suspend fun reloadGroups() {
@@ -958,7 +963,7 @@ class MainViewModel(
                 }
             )
         }
-        val request = testRequests.beginBulk(groupId)
+        val request = testRequests.beginBulk(groupId) ?: return
         val message = TestServiceMessage(
             key = AppConfig.MSG_MEASURE_CONFIG_START,
             subscriptionId = groupId,
@@ -995,8 +1000,12 @@ class MainViewModel(
     }
 
     fun testCurrentServerRealPing() {
+        startCurrentServerTest(MainTestRequests.CurrentOwner.MANUAL)
+    }
+
+    private fun startCurrentServerTest(owner: MainTestRequests.CurrentOwner) {
         if (!uiState.value.isRunning) return
-        val requestId = testRequests.beginCurrent()
+        val requestId = testRequests.beginCurrent(owner) ?: return
         _uiState.update { it.copy(isTesting = true, status = MainStatus.Testing) }
         dataSource.testCurrentServerRealPing(requestId)
     }
