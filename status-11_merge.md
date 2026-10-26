@@ -1,7 +1,7 @@
-commit: 1959611ab7d23ffe924e5cdc98693ffc315c71ca
+commit: 8e035eb4cb93b84c3f50ee51640bdabbb939c5c3
 ref: 11/merge
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40304087268
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40304310877
 
 ## Kotlin compile errors (e: lines)
 
@@ -14,8 +14,8 @@ tests="5" skipped="0" failures="0" errors="0"
 tests="5" skipped="0" failures="0" errors="0"
 
 ## Last 40 lines of build.log
-> Task :app:writePlaystoreDebugAppMetadata
-> Task :app:writePlaystoreDebugSigningConfigVersions
+> Task :app:mergeFdroidDebugJavaResource
+> Task :app:dexBuilderFdroidDebug
 > Task :app:mergeProjectDexFdroidDebug
 > Task :app:packageFdroidDebug
 > Task :app:createFdroidDebugApkListingFileRedirect
@@ -51,7 +51,7 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 2m 45s
+BUILD SUCCESSFUL in 3m
 82 actionable tasks: 82 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
 
@@ -74,8 +74,8 @@ Consider enabling configuration cache to speed up this build: https://docs.gradl
 > Task :app:prePlaystoreDebugUnitTestBuild UP-TO-DATE
 > Task :app:javaPreCompilePlaystoreDebugUnitTest
 > Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
-> Task :app:bundlePlaystoreDebugClassesToCompileJar
 > Task :app:bundlePlaystoreDebugClassesToRuntimeJar
+> Task :app:bundlePlaystoreDebugClassesToCompileJar
 
 > Task :app:compilePlaystoreDebugUnitTestKotlin
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/test/java/com/v2ray/ang/ui/compose/SnackbarLatestPresenterTest.kt:26:9 This declaration needs opt-in. Its usage should be marked with '@kotlinx.coroutines.ExperimentalCoroutinesApi' or '@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)'
@@ -93,6 +93,6 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 11s
+BUILD SUCCESSFUL in 12s
 28 actionable tasks: 6 executed, 22 up-to-date
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
