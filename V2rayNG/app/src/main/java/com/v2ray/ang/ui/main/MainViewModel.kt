@@ -46,6 +46,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.PatternSyntaxException
 
@@ -117,6 +118,8 @@ class MainViewModel(
 
     private val testRequests = MainTestRequests()
     private var bulkTestJob: Job? = null
+    private var bulkTimeoutJob: Job? = null
+    private var bulkTimeoutRequestId: String? = null
     private data class PendingSelectionTest(
         val guid: String,
         val requestId: String,
@@ -177,7 +180,7 @@ class MainViewModel(
                 return@launch
             }
 
-            val request = testRequests.beginBulk(profile.subscriptionId)
+            val request = beginBulkRequest(profile.subscriptionId, MainTestRequests.BulkOwner.SELECTED_SERVER)
             if (request == null) {
                 toast(R.string.toast_test_in_progress)
                 return@launch
@@ -211,13 +214,16 @@ class MainViewModel(
             override val selectedGuid: String?
                 get() = uiState.value.selectedGuid
             override val hasBulkTest: Boolean
+                get() = testRequests.bulk != null
+            override val hasAnyTest: Boolean
                 get() = testRequests.isTesting
-
-            override fun isBulkTest(requestId: String): Boolean =
-                testRequests.bulk?.id == requestId
-
-            override fun beginBulkTest(groupId: String): String? =
-                testRequests.beginBulk(groupId)?.id
+            override fun isBulkTest(requestId: String): Boolean = testRequests.bulk?.id == requestId
+            override fun wasBulkTestCancelled(requestId: String): Boolean = testRequests.wasBulkCancelled(requestId)
+            override fun beginBulkTest(groupId: String, owner: MainTestRequests.BulkOwner): String? =
+                beginBulkRequest(groupId, owner)?.id
+            override fun cancelBulkTest(requestId: String) {
+                this@MainViewModel.cancelBulkTest(requestId)
+            }
 
             override fun showTesting() {
                 _uiState.update { it.copy(isTesting = true, status = MainStatus.Testing) }
@@ -255,18 +261,30 @@ class MainViewModel(
 
             // True when any real (non-VPN) network with internet capability exists
             @Suppress("DEPRECATION")
-            override fun hasInternet(): Boolean = try {
-                val cm = appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-                cm.allNetworks.any { network ->
-                    val caps = cm.getNetworkCapabilities(network)
-                    caps != null &&
-                        caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
-                        caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) &&
-                        !caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
-                }
-            } catch (e: Exception) {
-                // If connectivity cannot be determined, do not treat the network as healthy.
-                false
+            override suspend fun hasInternet(): Boolean = withContext(ioDispatcher) {
+                try {
+                    val cm = appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                    val physicalNetworks = cm.allNetworks.mapNotNull { network ->
+                        val caps = cm.getNetworkCapabilities(network) ?: return@mapNotNull null
+                        if (!caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) ||
+                            caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
+                        ) return@mapNotNull null
+                        network to caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+                    }
+                    if (physicalNetworks.any { it.second }) return@withContext true
+                    // VALIDATED can be false even when TCP connectivity works; check only this ambiguous case.
+                    val targets = listOf("1.1.1.1" to 443, "8.8.8.8" to 443)
+                    for ((network, _) in physicalNetworks) for ((address, port) in targets) {
+                        val reachable = try {
+                            network.socketFactory.createSocket().use { socket ->
+                                socket.connect(InetSocketAddress(address, port), INTERNET_PROBE_TIMEOUT_MS)
+                            }
+                            true
+                        } catch (_: Exception) { false }
+                        if (reachable) return@withContext true
+                    }
+                    false
+                } catch (e: Exception) { false }
             }
 
         }
@@ -350,12 +368,18 @@ class MainViewModel(
             }
 
             is MainServiceEvent.MeasureConfigCancelled -> {
-                if (testRequests.completeBulk(event.requestId) != null) {
-                    if (pendingSelectionTest?.requestId == event.requestId) {
-                        pendingSelectionTest = null
+                if (testRequests.cancelBulk(event.requestId) != null) {
+                    if (bulkTimeoutRequestId == event.requestId) {
+                        bulkTimeoutJob?.cancel(); bulkTimeoutJob = null; bulkTimeoutRequestId = null
                     }
+                    val selectionTest = pendingSelectionTest?.takeIf { it.requestId == event.requestId }
+                    if (selectionTest != null) pendingSelectionTest = null
                     cancelPendingTestResults()
                     resetTestStatus()
+                    if (selectionTest != null) {
+                        LogUtil.w(AppConfig.TAG, "Healthy: selected-server test was cancelled; using a known alternative")
+                        healthy.connectToFastestKnown(excludeGuid = selectionTest.guid)
+                    }
                 }
             }
         }
@@ -995,9 +1019,39 @@ class MainViewModel(
     fun cancelAllPing() {
         bulkTestJob?.cancel()
         bulkTestJob = null
+        bulkTimeoutJob?.cancel()
+        bulkTimeoutJob = null
+        bulkTimeoutRequestId = null
         testRequests.cancelBulk()
         testRequests.invalidateCurrent()
         pendingSelectionTest = null
+        cancelPendingTestResults()
+        resetTestStatus()
+        dataSource.cancelAllPing()
+    }
+
+    private fun beginBulkRequest(groupId: String, owner: MainTestRequests.BulkOwner): MainTestRequests.Bulk? {
+        val request = testRequests.beginBulk(groupId, owner) ?: return null
+        bulkTimeoutJob?.cancel()
+        bulkTimeoutRequestId = request.id
+        bulkTimeoutJob = viewModelScope.launch {
+            delay(owner.timeoutMillis)
+            if (testRequests.bulk?.id != request.id) return@launch
+            LogUtil.w(AppConfig.TAG, "Healthy: ${owner.name.lowercase()} bulk test timed out; cancelling request")
+            val selection = pendingSelectionTest?.takeIf { it.requestId == request.id }
+            cancelBulkTest(request.id)
+            if (selection != null) healthy.connectToFastestKnown(excludeGuid = selection.guid)
+        }
+        return request
+    }
+
+    private fun cancelBulkTest(requestId: String) {
+        if (testRequests.cancelBulk(requestId) == null) return
+        if (bulkTimeoutRequestId == requestId) {
+            bulkTimeoutJob?.cancel(); bulkTimeoutJob = null; bulkTimeoutRequestId = null
+        }
+        if (pendingSelectionTest?.requestId == requestId) pendingSelectionTest = null
+        bulkTestJob?.cancel(); bulkTestJob = null
         cancelPendingTestResults()
         resetTestStatus()
         dataSource.cancelAllPing()
@@ -1020,13 +1074,14 @@ class MainViewModel(
             toast(R.string.toast_test_in_progress)
             return
         }
-        cancelAllPing()
         val groupId = uiState.value.selectedGroupId
         val servers = currentServers()
-        if (servers.isEmpty()) {
+        if (servers.isEmpty()) return
+        val serverGuids = servers.map { it.guid }
+        val request = beginBulkRequest(groupId, MainTestRequests.BulkOwner.MANUAL) ?: run {
+            toast(R.string.toast_test_in_progress)
             return
         }
-        val serverGuids = servers.map { it.guid }
         mutableServerGroupState(groupId).update { current ->
             current.copy(
                 servers = current.servers.map { server ->
@@ -1039,7 +1094,6 @@ class MainViewModel(
                 }
             )
         }
-        val request = testRequests.beginBulk(groupId) ?: return
         val message = TestServiceMessage(
             key = AppConfig.MSG_MEASURE_CONFIG_START,
             subscriptionId = groupId,
@@ -1097,6 +1151,9 @@ class MainViewModel(
 
     private fun onTestsFinished(requestId: String) {
         if (testRequests.completeBulk(requestId) == null) return
+        if (bulkTimeoutRequestId == requestId) {
+            bulkTimeoutJob?.cancel(); bulkTimeoutJob = null; bulkTimeoutRequestId = null
+        }
         val selectionTest = pendingSelectionTest?.takeIf { it.requestId == requestId }
         if (selectionTest != null) pendingSelectionTest = null
         resetTestStatus()
@@ -1181,5 +1238,6 @@ class MainViewModel(
 
     private companion object {
         const val TEST_RESULT_FLUSH_INTERVAL_MS = 500L
+        const val INTERNET_PROBE_TIMEOUT_MS = 1_200
     }
 }

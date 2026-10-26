@@ -24,8 +24,11 @@ interface HealthyHost {
     val isRunning: Boolean
     val selectedGuid: String?
     val hasBulkTest: Boolean
+    val hasAnyTest: Boolean
     fun isBulkTest(requestId: String): Boolean
-    fun beginBulkTest(groupId: String): String?
+    fun wasBulkTestCancelled(requestId: String): Boolean
+    fun beginBulkTest(groupId: String, owner: MainTestRequests.BulkOwner): String?
+    fun cancelBulkTest(requestId: String)
     fun showTesting()
     fun startCurrentServerTest()
     fun cancelAllTests()
@@ -77,7 +80,7 @@ class HealthyManager(
     private var connectionChosenDuringRefresh = false
 
     /** True while refresh, periodic testing, or a real-ping request owns the test flow. */
-    fun isOperationBusy(): Boolean = refreshActive || periodicRunning || host.hasBulkTest
+    fun isOperationBusy(): Boolean = refreshActive || periodicRunning || host.hasAnyTest
 
     // ---------- Suspect list (servers we just left; tested first by the periodic test) ----------
     private val suspectGuids = ConcurrentHashMap<String, Long>() // guid -> time it was marked suspect
@@ -130,7 +133,7 @@ class HealthyManager(
         override val refreshActive: Boolean get() = this@HealthyManager.refreshActive
         override val hasBulkTest: Boolean get() = host.hasBulkTest
 
-        override fun hasInternet(): Boolean = host.hasInternet()
+        override suspend fun hasInternet(): Boolean = host.hasInternet()
 
         override fun recentDownBytes(): Long = rxHistory.sumOf { it.second }
 
@@ -336,15 +339,20 @@ class HealthyManager(
 
     /** Returns false (and does nothing) when a refresh is already running. */
     private fun startRefresh(auto: Boolean): Boolean {
-        if (refreshHealthyJob?.isActive == true) {
+        if (refreshHealthyJob?.isActive == true || refreshActive) {
             if (!auto) host.toast("Healthy refresh is already running")
             return false
         }
+        if (periodicRunning || host.hasAnyTest) {
+            if (!auto) host.toast(dataSource.getString(com.v2ray.ang.R.string.toast_test_in_progress))
+            log("Refresh skipped: another test operation is active")
+            return false
+        }
+        refreshActive = true // reserve before the coroutine can yield to periodic testing
         refreshHealthyJob = scope.launch {
             var outcome = RefreshOutcome.FAILED_OR_CANCELLED
             try {
                 connectionChosenDuringRefresh = false
-                refreshActive = true
                 log("Refresh started (running=${host.isRunning}, auto=$auto)")
 
                 var subs = withContext(io) { dataSource.getSubscriptions() }
@@ -372,13 +380,13 @@ class HealthyManager(
                 // while testing the subscriptions is used (the flag stays on).
                 autoConnectOnFirstGood = true
                 say("Testing Healthy servers first...")
-                testGroupAndWait(healthy.guid)
+                if (!testGroupAndWait(healthy.guid)) return@launch
 
                 say("Updating subscriptions...")
                 withContext(io) { dataSource.updateConfigViaSubAll() }
 
                 for (group in sources) {
-                    testGroupAndWait(group.guid)
+                    if (!testGroupAndWait(group.guid)) return@launch
                 }
 
                 val summary = withContext(io) {
@@ -486,29 +494,37 @@ class HealthyManager(
         return true
     }
 
-    private suspend fun testGroupAndWait(groupId: String) {
+    private suspend fun testGroupAndWait(groupId: String): Boolean {
         val guids = withContext(io) { dataSource.getServerGuidList(groupId) }
-        if (guids.isEmpty()) return
-        withContext(io) { dataSource.clearAllTestDelayResults(guids) }
-        val requestId = host.beginBulkTest(groupId) ?: return
-        host.showTesting()
-        dataSource.sendMsg2TestService(
-            TestServiceMessage(
-                key = AppConfig.MSG_MEASURE_CONFIG_START,
-                subscriptionId = groupId,
-                serverGuids = emptyList(),
-                onlyTcp = false
-            ),
-            requestId
-        )
-        var waited = 0
-        while (host.isBulkTest(requestId) && waited < 600) { // up to 5 minutes
+        if (guids.isEmpty()) return true
+        val requestId = host.beginBulkTest(groupId, MainTestRequests.BulkOwner.REFRESH) ?: return false
+        try {
+            host.showTesting()
+            // Clear only after this refresh owns a real request.
+            withContext(io) { dataSource.clearAllTestDelayResults(guids) }
+            if (!host.isBulkTest(requestId)) return !host.wasBulkTestCancelled(requestId)
+            dataSource.sendMsg2TestService(TestServiceMessage(key = AppConfig.MSG_MEASURE_CONFIG_START,
+                subscriptionId = groupId, serverGuids = emptyList(), onlyTcp = false), requestId)
+            var waited = 0
+            while (host.isBulkTest(requestId) && waited < 600) { delay(500); waited++ }
+            if (host.isBulkTest(requestId)) {
+                log("Refresh test timed out for group $groupId; cancelling only its request")
+                host.cancelBulkTest(requestId)
+                return false
+            }
+            if (host.wasBulkTestCancelled(requestId)) {
+                log("Refresh test cancelled for group $groupId; aborting refresh")
+                return false
+            }
             delay(500)
-            waited++
+            return !host.wasBulkTestCancelled(requestId)
+        } catch (cancelled: CancellationException) {
+            if (host.isBulkTest(requestId)) host.cancelBulkTest(requestId)
+            throw cancelled
+        } catch (e: Exception) {
+            if (host.isBulkTest(requestId)) host.cancelBulkTest(requestId)
+            throw e
         }
-        // A test that never ends would block the guard for good, so stop it
-        if (host.isBulkTest(requestId)) host.cancelAllTests()
-        delay(500)
     }
 
     // =====================================================================
@@ -521,7 +537,7 @@ class HealthyManager(
             while (true) {
                 delay(periodicCheckMs)
                 val now = SystemClock.elapsedRealtime()
-                if (!host.isRunning || refreshActive || host.hasBulkTest || periodicRunning) continue
+                if (!host.isRunning || refreshActive || host.hasAnyTest || periodicRunning) continue
                 if (guard.isTroubled) continue                        // current server has a problem, do not add load
                 if (guard.recentlySwitched()) continue                // VPN is still settling after a switch
                 if (now - lastPeriodicMs < periodicIntervalMs) continue
@@ -540,6 +556,8 @@ class HealthyManager(
     }
 
     private suspend fun runPeriodicBatch() {
+        periodicRunning = true // reserve before any IO suspension
+        try {
         val prepared: Triple<String, List<String>, Map<String, Long>> = withContext(io) {
             val healthy = dataSource.getSubscriptions()
                 .firstOrNull { it.subscription.remarks == healthyName }
@@ -577,27 +595,32 @@ class HealthyManager(
         } ?: return
 
         val (healthyId, batch, previous) = prepared
-        periodicRunning = true
+        log("Periodic test of ${batch.size} Healthy servers")
+        val requestId = host.beginBulkTest(healthyId, MainTestRequests.BulkOwner.PERIODIC) ?: return
         try {
-            log("Periodic test of ${batch.size} Healthy servers")
-            val requestId = host.beginBulkTest(healthyId) ?: return
-            dataSource.sendMsg2TestService(
-                TestServiceMessage(
-                    key = AppConfig.MSG_MEASURE_CONFIG_START,
-                    subscriptionId = healthyId,
-                    serverGuids = batch,
-                    onlyTcp = false
-                ),
-                requestId
-            )
+            dataSource.sendMsg2TestService(TestServiceMessage(key = AppConfig.MSG_MEASURE_CONFIG_START,
+                subscriptionId = healthyId, serverGuids = batch, onlyTcp = false), requestId)
             var waited = 0L
-            while (host.isBulkTest(requestId) && waited < periodicMaxWaitMs) {
-                delay(500)
-                waited += 500
+            while (host.isBulkTest(requestId) && waited < periodicMaxWaitMs) { delay(500); waited += 500 }
+            if (host.isBulkTest(requestId)) {
+                log("Periodic test timed out; cancelling request and skipping penalties")
+                host.cancelBulkTest(requestId)
+                return
             }
-            if (host.isBulkTest(requestId)) host.cancelAllTests()
+            if (host.wasBulkTestCancelled(requestId)) {
+                log("Periodic test cancelled; skipping penalties")
+                return
+            }
             delay(500)
+            if (host.wasBulkTestCancelled(requestId)) return
             applyPenaltyRule(batch, previous)
+        } catch (cancelled: CancellationException) {
+            if (host.isBulkTest(requestId)) host.cancelBulkTest(requestId)
+            throw cancelled
+        } catch (e: Exception) {
+            if (host.isBulkTest(requestId)) host.cancelBulkTest(requestId)
+            throw e
+        }
         } finally {
             periodicRunning = false
             quietUntilMs = SystemClock.elapsedRealtime() + 8_000L

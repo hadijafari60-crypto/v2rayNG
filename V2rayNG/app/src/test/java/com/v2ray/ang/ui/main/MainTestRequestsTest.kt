@@ -39,11 +39,13 @@ class MainTestRequestsTest {
         val requests = MainTestRequests()
         val cancelled = requests.beginBulk("group")!!
         requests.cancelBulk()
+        assertTrue(requests.wasBulkCancelled(cancelled.id))
         assertNull(requests.completeBulk(cancelled.id))
         val current = requests.beginBulk("group")!!
         assertNull(requests.beginBulk("group"))
         assertEquals(current, requests.bulk)
         assertEquals(current, requests.completeBulk(current.id))
+        assertFalse(requests.wasBulkCancelled(current.id))
         assertNull(requests.completeBulk(current.id))
         assertFalse(requests.isTesting)
     }

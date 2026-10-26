@@ -64,6 +64,7 @@ data class GuardConfig(
     val stallCooldownMs: Long = 15_000L,
     val deferMs: Long = 5_000L,               // wait while another test or a refresh is running
     val errorRetryMs: Long = 30_000L,
+    val noInternetRecheckMs: Long = 60_000L,
     val autoRefreshBaseMs: Long = 600_000L,   // first automatic refresh interval: 10 minutes
     val autoRefreshMaxMs: Long = 3_600_000L,  // never wait longer than 1 hour
     val refreshWaitMaxMs: Long = 900_000L,    // safety net if a refresh never reports back
@@ -77,7 +78,7 @@ data class GuardConfig(
  *
  * When a switch is not possible (no internet, cooldown, no backup) the guard does NOT keep testing.
  * It goes to sleep until the one event that can change the situation:
- *   - no internet: the next network change
+ *   - no internet: the next network/capability change or a slow local recheck
  *   - cooldown: the end of the cooldown
  *   - no backup: an automatic Healthy refresh, repeated with a growing delay (10 min .. 1 hour)
  *
@@ -243,7 +244,7 @@ class HealthyGuard(
             return
         }
         if (!ports.hasInternet()) {
-            block("nointernet", "No internet, not switching", NEVER, say = true)
+            block("nointernet", "No internet, not switching", ports.now + cfg.noInternetRecheckMs, say = true)
             return
         }
         checking = true
@@ -325,7 +326,7 @@ class HealthyGuard(
             return
         }
         if (!ports.hasInternet()) {
-            block("nointernet", "No internet, not switching", NEVER, say = true)
+            block("nointernet", "No internet, not switching", ports.now + cfg.noInternetRecheckMs, say = true)
             return
         }
         val left = cooldownLeft()

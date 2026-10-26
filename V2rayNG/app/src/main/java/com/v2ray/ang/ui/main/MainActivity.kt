@@ -142,6 +142,7 @@ class MainActivity : HelperBaseComponentActivity() {
 
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
     private var networkSeen = false
+    private val networkValidation = mutableMapOf<Network, Boolean>()
 
     /**
      * Connect requests can be emitted more than once during service restarts.
@@ -162,7 +163,17 @@ class MainActivity : HelperBaseComponentActivity() {
                     if (networkSeen) mainViewModel.onNetworkChanged() else networkSeen = true
                 }
 
+                override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
+                    val validated = networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+                    val previous = networkValidation.put(network, validated)
+                    if (previous != null && previous != validated) {
+                        LogUtil.i(AppConfig.TAG, "Network validation changed: $previous -> $validated")
+                        mainViewModel.onNetworkChanged()
+                    }
+                }
+
                 override fun onLost(network: Network) {
+                    networkValidation.remove(network)
                     mainViewModel.onNetworkChanged()
                 }
             }
@@ -179,6 +190,7 @@ class MainActivity : HelperBaseComponentActivity() {
         // reports that the callback was already unregistered.
         networkCallback = null
         networkSeen = false
+        networkValidation.clear()
         try {
             val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             cm.unregisterNetworkCallback(callback)

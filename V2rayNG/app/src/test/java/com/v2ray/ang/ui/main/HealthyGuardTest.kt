@@ -51,7 +51,7 @@ class HealthyGuardTest {
         val logs = mutableListOf<String>()
         val says = mutableListOf<String>()
 
-        override fun hasInternet(): Boolean = internet
+        override suspend fun hasInternet(): Boolean = internet
         override fun recentDownBytes(): Long = downBytes
 
         override fun log(message: String) {
@@ -274,6 +274,18 @@ class HealthyGuardTest {
         g.onNetworkChanged()
         advance(10_000)
         assertTrue(p.probes >= 1)
+        assertFalse(g.isTroubled)
+    }
+
+    @Test
+    fun noInternetIsRecheckedEvenIfNoNetworkCallbackArrives() = runTest {
+        val (p, g) = newGuard { internet = false }
+        g.onRunning(true)
+        advance(10_000)
+        assertEquals(0, p.probes)
+        p.internet = true
+        advance(56_000) // no network event; the 60-second local recheck must wake the guard
+        assertEquals(1, p.probes)
         assertFalse(g.isTroubled)
     }
 

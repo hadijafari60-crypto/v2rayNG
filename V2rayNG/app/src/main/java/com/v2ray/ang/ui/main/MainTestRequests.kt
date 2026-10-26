@@ -5,8 +5,12 @@ import java.util.UUID
 /** Main-thread request ownership; a late reply must not complete a newer test. */
 internal class MainTestRequests {
     enum class CurrentOwner { MANUAL, GUARD }
-
-    data class Bulk(val id: String, val groupId: String)
+    enum class BulkOwner(val timeoutMillis: Long) {
+        MANUAL(10 * 60_000L), SELECTED_SERVER(20_000L), REFRESH(5 * 60_000L), PERIODIC(60_000L),
+    }
+    enum class BulkEndState { COMPLETED, CANCELLED }
+    data class Bulk(val id: String, val groupId: String, val owner: BulkOwner)
+    private val bulkEndStates = LinkedHashMap<String, BulkEndState>()
 
     private var current: String? = null
     var currentOwner: CurrentOwner? = null
@@ -36,18 +40,31 @@ internal class MainTestRequests {
         currentOwner = null
     }
 
-    fun beginBulk(groupId: String): Bulk? {
+    fun beginBulk(groupId: String, owner: BulkOwner = BulkOwner.MANUAL): Bulk? {
         if (isTesting) return null
-        return Bulk(UUID.randomUUID().toString(), groupId).also { bulk = it }
+        return Bulk(UUID.randomUUID().toString(), groupId, owner).also { bulk = it }
     }
-
     fun completeBulk(id: String): Bulk? {
         val request = bulk?.takeIf { it.id == id } ?: return null
         bulk = null
+        rememberBulkEnd(id, BulkEndState.COMPLETED)
         return request
     }
-
-    fun cancelBulk() {
+    fun cancelBulk(): Bulk? {
+        val request = bulk ?: return null
         bulk = null
+        rememberBulkEnd(request.id, BulkEndState.CANCELLED)
+        return request
+    }
+    fun cancelBulk(id: String): Bulk? {
+        val request = bulk?.takeIf { it.id == id } ?: return null
+        bulk = null
+        rememberBulkEnd(id, BulkEndState.CANCELLED)
+        return request
+    }
+    fun wasBulkCancelled(id: String): Boolean = bulkEndStates[id] == BulkEndState.CANCELLED
+    private fun rememberBulkEnd(id: String, state: BulkEndState) {
+        bulkEndStates[id] = state
+        while (bulkEndStates.size > 64) bulkEndStates.remove(bulkEndStates.keys.first())
     }
 }
