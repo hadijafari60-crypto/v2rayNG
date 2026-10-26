@@ -316,6 +316,7 @@ class HealthyGuard(
                     dueAt = ports.now + cfg.deferMs
                     return
                 }
+                if (requestGeneration != connectRequestGeneration) return
                 val second = probe()
                 if (requestGeneration != connectRequestGeneration) return
                 if (isGood(second)) {
@@ -381,6 +382,7 @@ class HealthyGuard(
             block("bulk", "Switch postponed: another test is running", ports.now + cfg.deferMs)
             return
         }
+        if (requestGeneration != connectRequestGeneration) return
         if (!ports.hasInternet()) {
             block("nointernet", "No internet, not switching", NEVER, say = true)
             return
