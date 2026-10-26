@@ -10,6 +10,7 @@ on:
     branches:
       - master
       - work/master-baseline
+      - work/test-coordinator
 
 permissions:
   contents: write
@@ -103,11 +104,11 @@ jobs:
         name: debug-apks
         path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/debug/*.apk
 
-    - name: Unit tests (Healthy guard)
+    - name: Unit tests (Healthy guard and test coordinator)
       shell: bash
       run: |
         cd ${{ github.workspace }}/V2rayNG
-        ./gradlew testPlaystoreDebugUnitTest --tests "com.v2ray.ang.ui.main.HealthyGuardTest" 2>&1 | tee ${{ github.workspace }}/test.log
+        ./gradlew testPlaystoreDebugUnitTest --tests "com.v2ray.ang.ui.main.HealthyGuardTest" --tests "com.v2ray.ang.ui.main.MainTestRequestsTest" 2>&1 | tee ${{ github.workspace }}/test.log
 
     - name: Publish build status
       if: always()
