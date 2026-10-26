@@ -142,6 +142,11 @@ class MainViewModel(
      */
     fun selectServer(guid: String) {
         if (healthy.isOperationBusy() || testRequests.isTesting) {
+            // A later tap supersedes a pending connect decision, but never cancels the running test.
+            if (pendingSelectionTest != null) {
+                LogUtil.w(AppConfig.TAG, "Healthy: pending selected-server connection superseded by a later tap")
+                pendingSelectionTest = null
+            }
             toast(R.string.toast_test_in_progress)
             healthy.connectToFastestKnown(excludeGuid = guid)
             return
