@@ -117,6 +117,12 @@ class MainViewModel(
 
     private val testRequests = MainTestRequests()
     private var bulkTestJob: Job? = null
+    private data class PendingSelectionTest(
+        val guid: String,
+        val requestId: String,
+        var delayMillis: Long? = null,
+    )
+    private var pendingSelectionTest: PendingSelectionTest? = null
 
     private val initialPageReady = CompletableDeferred<Unit>()
 
@@ -130,15 +136,59 @@ class MainViewModel(
         _connectRequests.tryEmit(Unit)
     }
 
-    /** Server-row taps during a test are redirected to the fastest known good server. */
+    /**
+     * While another Healthy/test operation owns the test service, preserve the existing
+     * fast-known-server behavior. Otherwise, test the tapped profile by itself before connecting.
+     */
     fun selectServer(guid: String) {
-        if (healthy.isOperationBusy()) {
+        if (healthy.isOperationBusy() || testRequests.isTesting) {
             toast(R.string.toast_test_in_progress)
             healthy.connectToFastestKnown(excludeGuid = guid)
             return
         }
         if (guid == uiState.value.selectedGuid) return
-        connectToServer(guid)
+        testSelectedServerBeforeConnect(guid)
+    }
+
+    private fun testSelectedServerBeforeConnect(guid: String) {
+        viewModelScope.launch {
+            val profile = withContext(ioDispatcher) {
+                dataSource.decodeServerConfig(guid)
+            }
+            if (profile == null) {
+                toastError(R.string.toast_failure)
+                return@launch
+            }
+
+            // Re-check after loading the profile: another operation may have started meanwhile.
+            if (healthy.isOperationBusy() || testRequests.isTesting) {
+                toast(R.string.toast_test_in_progress)
+                healthy.connectToFastestKnown(excludeGuid = guid)
+                return@launch
+            }
+
+            val request = testRequests.beginBulk(profile.subscriptionId)
+            if (request == null) {
+                toast(R.string.toast_test_in_progress)
+                return@launch
+            }
+            pendingSelectionTest = PendingSelectionTest(guid, request.id)
+            _uiState.update {
+                it.copy(isTesting = true, status = MainStatus.Testing)
+            }
+            val message = TestServiceMessage(
+                key = AppConfig.MSG_MEASURE_CONFIG_START,
+                subscriptionId = profile.subscriptionId,
+                serverGuids = listOf(guid),
+                onlyTcp = false,
+            )
+            LogUtil.w(AppConfig.TAG, "Healthy: testing selected server before connecting (${guid.take(8)})")
+            bulkTestJob = viewModelScope.launch {
+                withContext(ioDispatcher) {
+                    dataSource.sendMsg2TestService(message, request.id)
+                }
+            }
+        }
     }
 
     // ---------- Healthy logic (see HealthyManager.kt) ----------
@@ -262,6 +312,9 @@ class MainViewModel(
             is MainServiceEvent.MeasureConfigSuccess -> {
                 val request = testRequests.bulk?.takeIf { it.id == event.requestId } ?: return
                 queueTestResult(event.result, request)
+                pendingSelectionTest
+                    ?.takeIf { it.requestId == event.requestId && it.guid == event.result.guid }
+                    ?.delayMillis = event.result.delayMillis
                 healthy.onConfigSuccess(event.result.guid, event.result.delayMillis)
             }
 
@@ -288,6 +341,9 @@ class MainViewModel(
 
             is MainServiceEvent.MeasureConfigCancelled -> {
                 if (testRequests.completeBulk(event.requestId) != null) {
+                    if (pendingSelectionTest?.requestId == event.requestId) {
+                        pendingSelectionTest = null
+                    }
                     cancelPendingTestResults()
                     resetTestStatus()
                 }
@@ -931,6 +987,7 @@ class MainViewModel(
         bulkTestJob = null
         testRequests.cancelBulk()
         testRequests.invalidateCurrent()
+        pendingSelectionTest = null
         cancelPendingTestResults()
         resetTestStatus()
         dataSource.cancelAllPing()
@@ -1030,10 +1087,28 @@ class MainViewModel(
 
     private fun onTestsFinished(requestId: String) {
         if (testRequests.completeBulk(requestId) == null) return
+        val selectionTest = pendingSelectionTest?.takeIf { it.requestId == requestId }
+        if (selectionTest != null) pendingSelectionTest = null
         resetTestStatus()
         viewModelScope.launch(ioDispatcher) {
             cacheMutex.withLock { groupDataCache.clear() }
             reloadAllGroups(_uiState.value.groups.map { it.id })
+        }
+
+        if (selectionTest != null) {
+            if ((selectionTest.delayMillis ?: -1L) > 0L) {
+                LogUtil.w(
+                    AppConfig.TAG,
+                    "Healthy: selected server test passed (${selectionTest.delayMillis}ms); connecting",
+                )
+                connectToServer(selectionTest.guid)
+            } else {
+                LogUtil.w(
+                    AppConfig.TAG,
+                    "Healthy: selected server test failed; selecting a previously tested alternative",
+                )
+                healthy.connectToFastestKnown(excludeGuid = selectionTest.guid)
+            }
         }
     }
 
