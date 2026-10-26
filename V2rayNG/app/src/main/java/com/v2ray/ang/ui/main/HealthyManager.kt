@@ -34,7 +34,6 @@ interface HealthyHost {
     fun toast(message: String)
     fun toastFailure()
     fun hasInternet(): Boolean
-    fun copyText(label: String, text: String)
 }
 
 /**
