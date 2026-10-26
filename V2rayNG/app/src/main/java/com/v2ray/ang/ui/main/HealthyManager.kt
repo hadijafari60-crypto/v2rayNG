@@ -6,6 +6,8 @@ import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.extension.delay
 import com.v2ray.ang.extension.isComplexType
 import com.v2ray.ang.util.LogUtil
+import android.os.SystemClock
+
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -125,7 +127,7 @@ class HealthyManager(
     private val guard = HealthyGuard(scope, Ports())
 
     private inner class Ports : GuardPorts {
-        override val now: Long get() = System.currentTimeMillis()
+        override val now: Long get() = SystemClock.elapsedRealtime()
         override val isRunning: Boolean get() = host.isRunning
         override val refreshActive: Boolean get() = this@HealthyManager.refreshActive
         override val hasBulkTest: Boolean get() = host.hasBulkTest
@@ -166,7 +168,7 @@ class HealthyManager(
             val currentGuid = dataSource.getSelectServer() ?: return@withContext null
             val currentProfile = dataSource.decodeServerConfig(currentGuid)
             val currentId = currentProfile?.duplicateIdentity()
-            val nowMs = System.currentTimeMillis()
+            val nowMs = SystemClock.elapsedRealtime()
             val best = dataSource.getServerGuidList(healthy.guid)
                 .mapNotNull { guid ->
                     if (guid == currentGuid) return@mapNotNull null
@@ -191,7 +193,7 @@ class HealthyManager(
         }
 
         override fun markSuspect(guid: String) {
-            suspectGuids[guid] = System.currentTimeMillis()
+            suspectGuids[guid] = SystemClock.elapsedRealtime()
         }
 
         override fun connectTo(guid: String) {
@@ -219,7 +221,7 @@ class HealthyManager(
     }
 
     fun onRunningChanged(running: Boolean) {
-        if (running) lastPeriodicMs = System.currentTimeMillis() // first batch 5 minutes after connecting
+        if (running) lastPeriodicMs = SystemClock.elapsedRealtime() // first batch 5 minutes after connecting
         guard.onRunning(running)
     }
 
@@ -432,7 +434,7 @@ class HealthyManager(
             } finally {
                 autoConnectOnFirstGood = false
                 refreshActive = false
-                lastPeriodicMs = System.currentTimeMillis() // the refresh just tested everything
+                lastPeriodicMs = SystemClock.elapsedRealtime() // the refresh just tested everything
                 host.copyText("Healthy log", logText()) // temporary: paste it in the chat for diagnosis
                 guard.onRefreshFinished(outcome)
             }
@@ -474,7 +476,7 @@ class HealthyManager(
         periodicJob = scope.launch {
             while (true) {
                 delay(periodicCheckMs)
-                val now = System.currentTimeMillis()
+                val now = SystemClock.elapsedRealtime()
                 if (!host.isRunning || refreshActive || host.hasBulkTest || periodicRunning) continue
                 if (guard.isTroubled) continue                        // current server has a problem, do not add load
                 if (guard.recentlySwitched()) continue                // VPN is still settling after a switch
@@ -500,7 +502,7 @@ class HealthyManager(
                 ?: return@withContext null
             // Suspects get priority only for a bounded window. Expire old marks so a
             // server that keeps failing cannot monopolize the first slots forever.
-            val nowMs = System.currentTimeMillis()
+            val nowMs = SystemClock.elapsedRealtime()
             suspectGuids.entries.removeIf { nowMs - it.value >= suspectMs }
 
             val currentGuid = host.selectedGuid
@@ -554,7 +556,7 @@ class HealthyManager(
             applyPenaltyRule(batch, previous)
         } finally {
             periodicRunning = false
-            quietUntilMs = System.currentTimeMillis() + 8_000L
+            quietUntilMs = SystemClock.elapsedRealtime() + 8_000L
         }
     }
 
@@ -649,7 +651,7 @@ class HealthyManager(
                 val down = if (lastRxBytes >= 0) rx - lastRxBytes else 0L
                 lastTxBytes = tx
                 lastRxBytes = rx
-                val now = System.currentTimeMillis()
+                val now = SystemClock.elapsedRealtime()
                 if (!host.isRunning) {
                     stallSamples = 0
                     rxHistory.clear()
