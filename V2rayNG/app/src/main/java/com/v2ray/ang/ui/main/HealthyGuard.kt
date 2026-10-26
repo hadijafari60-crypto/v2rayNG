@@ -103,6 +103,7 @@ class HealthyGuard(
     private var connectedAt = 0L
     private var connectPending = false // the next check is the first one on a new connection
     private var manualConnectPending = false // explicit user selection takes priority over background tests
+    private var connectRequestGeneration = 0L
     private var skipCooldown = false   // the user picked this server, or it is marked dead
     private var blocked: String? = null
     private var checking = false
@@ -156,11 +157,18 @@ class HealthyGuard(
 
     /** A user-selected server must not wait for a background batch to finish. */
     fun onConnectRequested() {
+        connectRequestGeneration++
         manualConnectPending = true
         connectPending = true
         skipCooldown = true
         blocked = null
+        settleUntil = maxOf(settleUntil, ports.now + cfg.connectSettleMs)
         dueAt = minOf(dueAt, ports.now)
+        val activeProbe = probeWaiter
+        if (activeProbe != null) {
+            ports.cancelProbe()
+            activeProbe.complete(1L) // release the old waiter; its result is discarded by generation
+        }
         if (ports.hasBulkTest && !ports.refreshActive) {
             ports.log("Manual server selection preempts the active bulk test")
             ports.cancelBulkTest()
@@ -272,6 +280,7 @@ class HealthyGuard(
             return
         }
         checking = true
+        val requestGeneration = connectRequestGeneration
         try {
             var oneBad = false
             if (connectPending) {
@@ -290,6 +299,10 @@ class HealthyGuard(
                 }
             }
             val first = probe()
+            if (requestGeneration != connectRequestGeneration) {
+                ports.log("Discarding probe result after a newer server selection")
+                return
+            }
             if (isGood(first)) {
                 onGood()
                 return
@@ -297,12 +310,14 @@ class HealthyGuard(
             if (!oneBad) {
                 ports.log("Bad sample, confirming in ${cfg.confirmDelayMs / 1000}s")
                 delay(cfg.confirmDelayMs.milliseconds)
+                if (requestGeneration != connectRequestGeneration) return
                 if (!ports.isRunning) return
                 if (ports.refreshActive || !canProceedDuringBulkTest()) {
                     dueAt = ports.now + cfg.deferMs
                     return
                 }
                 val second = probe()
+                if (requestGeneration != connectRequestGeneration) return
                 if (isGood(second)) {
                     ports.log("Confirmation test passed, staying")
                     onGood()
@@ -310,7 +325,7 @@ class HealthyGuard(
                 }
             }
             ports.log("Bad sample confirmed")
-            trySwitch()
+            trySwitch(requestGeneration)
         } finally {
             checking = false
         }
@@ -360,7 +375,8 @@ class HealthyGuard(
 
     // ------------------------------------------------------------------ switching
 
-    private suspend fun trySwitch() {
+    private suspend fun trySwitch(requestGeneration: Long) {
+        if (requestGeneration != connectRequestGeneration) return
         if (!canProceedDuringBulkTest()) {
             block("bulk", "Switch postponed: another test is running", ports.now + cfg.deferMs)
             return
@@ -375,6 +391,10 @@ class HealthyGuard(
             return
         }
         val pick = ports.pickBackup()
+        if (requestGeneration != connectRequestGeneration) {
+            ports.log("Discarding switch after a newer server selection")
+            return
+        }
         if (pick == null) {
             noBackup()
             return

@@ -44,6 +44,7 @@ class HealthyGuardTest {
         var refreshOutcome = RefreshOutcome.NO_BACKUP
 
         var probes = 0
+        private var probeGeneration = 0
         var cancelledProbes = 0
         var picks = 0
         val switches = mutableListOf<Pair<Long, String>>()
@@ -66,16 +67,18 @@ class HealthyGuardTest {
 
         override fun startProbe() {
             val index = probes++
+            val generation = probeGeneration
             if (silentProbe) return
             val answer = probeAnswer(index)
             scope.backgroundScope.launch {
                 delay(probeLatencyMs)
-                guard.onProbeResult(answer)
+                if (generation == probeGeneration) guard.onProbeResult(answer)
             }
         }
 
         override fun cancelProbe() {
             cancelledProbes++
+            probeGeneration++
         }
 
         var bulkCancellations = 0
@@ -330,6 +333,24 @@ class HealthyGuardTest {
         assertEquals(1, p.probes)
         assertEquals(1, p.switches.size)
         assertEquals("B0", p.switches.single().second)
+    }
+
+    @Test
+    fun manualSelectionCancelsInFlightProbeAndDiscardsItsLateResult() = runTest {
+        val (p, g) = newGuard {
+            probeLatencyMs = 8_000
+            probeAnswer = { index -> if (index == 0) -1L else 150L }
+        }
+        g.onRunning(true)
+        advance(6_000) // the initial probe is now waiting for its answer
+        p.selectionInfo = GuardSelection("A", -1L, true)
+
+        g.onConnectRequested()
+
+        assertEquals(1, p.cancelledProbes)
+        advance(14_000)
+        assertEquals(2, p.probes)
+        assertTrue(p.switches.isEmpty())
     }
 
     @Test
