@@ -51,6 +51,20 @@ class MainTestRequestsTest {
     }
 
     @Test
+    fun currentCancellationIsScopedToItsRequestId() {
+        val requests = MainTestRequests()
+        val first = requests.beginCurrent(MainTestRequests.CurrentOwner.MANUAL)!!
+        assertFalse(requests.cancelCurrent("stale-id"))
+        assertEquals(MainTestRequests.CurrentOwner.MANUAL, requests.currentOwner)
+        assertTrue(requests.cancelCurrent(first))
+        assertFalse(requests.isTesting)
+        val next = requests.beginCurrent(MainTestRequests.CurrentOwner.GUARD)!!
+        assertFalse(requests.cancelCurrent(first))
+        assertEquals(MainTestRequests.CurrentOwner.GUARD, requests.currentOwner)
+        assertTrue(requests.completeCurrent(next))
+    }
+
+    @Test
     fun bulkCancellationIsScopedToItsRequestId() {
         val requests = MainTestRequests()
         val first = requests.beginBulk("first", MainTestRequests.BulkOwner.SELECTED_SERVER)!!

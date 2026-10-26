@@ -40,6 +40,13 @@ internal class MainTestRequests {
         currentOwner = null
     }
 
+    fun cancelCurrent(id: String): Boolean {
+        if (current != id) return false
+        current = null
+        currentOwner = null
+        return true
+    }
+
     fun beginBulk(groupId: String, owner: BulkOwner = BulkOwner.MANUAL): Bulk? {
         if (isTesting) return null
         return Bulk(UUID.randomUUID().toString(), groupId, owner).also { bulk = it }

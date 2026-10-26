@@ -120,6 +120,8 @@ class MainViewModel(
     private var bulkTestJob: Job? = null
     private var bulkTimeoutJob: Job? = null
     private var bulkTimeoutRequestId: String? = null
+    private var currentTimeoutJob: Job? = null
+    private var currentTimeoutRequestId: String? = null
     private data class PendingSelectionTest(
         val guid: String,
         val requestId: String,
@@ -337,6 +339,7 @@ class MainViewModel(
             MainServiceEvent.StateStopSuccess -> updateRunningState(false)
             is MainServiceEvent.MeasureDelayResult -> {
                 if (!uiState.value.isRunning || !testRequests.completeCurrent(event.requestId)) return
+                clearCurrentTimeout(event.requestId)
                 _uiState.update { it.copy(isTesting = testRequests.isTesting, status = MainStatus.ConnectionTest(event.result)) }
                 healthy.onDelayResult(event.result.delayMillis)
             }
@@ -368,7 +371,10 @@ class MainViewModel(
             }
 
             is MainServiceEvent.MeasureDelayCancelled -> {
-                if (testRequests.completeCurrent(event.requestId)) resetTestStatus()
+                if (testRequests.completeCurrent(event.requestId)) {
+                    clearCurrentTimeout(event.requestId)
+                    resetTestStatus()
+                }
             }
 
             is MainServiceEvent.MeasureConfigCancelled -> {
@@ -1023,6 +1029,9 @@ class MainViewModel(
     fun cancelAllPing() {
         bulkTestJob?.cancel()
         bulkTestJob = null
+        currentTimeoutJob?.cancel()
+        currentTimeoutJob = null
+        currentTimeoutRequestId = null
         bulkTimeoutJob?.cancel()
         bulkTimeoutJob = null
         bulkTimeoutRequestId = null
@@ -1057,6 +1066,20 @@ class MainViewModel(
         if (pendingSelectionTest?.requestId == requestId) pendingSelectionTest = null
         bulkTestJob?.cancel(); bulkTestJob = null
         cancelPendingTestResults()
+        resetTestStatus()
+        dataSource.cancelAllPing()
+    }
+
+    private fun clearCurrentTimeout(requestId: String? = null) {
+        if (requestId != null && currentTimeoutRequestId != requestId) return
+        currentTimeoutJob?.cancel()
+        currentTimeoutJob = null
+        currentTimeoutRequestId = null
+    }
+
+    private fun cancelCurrentTest(requestId: String) {
+        if (!testRequests.cancelCurrent(requestId)) return
+        clearCurrentTimeout(requestId)
         resetTestStatus()
         dataSource.cancelAllPing()
     }
@@ -1150,6 +1173,18 @@ class MainViewModel(
             return
         }
         _uiState.update { it.copy(isTesting = true, status = MainStatus.Testing) }
+        clearCurrentTimeout()
+        currentTimeoutRequestId = requestId
+        val timeoutMillis = if (owner == MainTestRequests.CurrentOwner.GUARD) 12_000L else 20_000L
+        currentTimeoutJob = viewModelScope.launch {
+            delay(timeoutMillis)
+            if (testRequests.currentOwner == owner && testRequests.cancelCurrent(requestId)) {
+                LogUtil.w(AppConfig.TAG, "Healthy: ${owner.name.lowercase()} current-server test timed out")
+                clearCurrentTimeout(requestId)
+                resetTestStatus()
+                dataSource.cancelAllPing()
+            }
+        }
         dataSource.testCurrentServerRealPing(requestId)
     }
 
@@ -1207,7 +1242,10 @@ class MainViewModel(
     // ---------- Running state ----------
     private fun updateRunningState(running: Boolean, clearTestingText: Boolean = true) {
         healthy.onRunningChanged(running)
-        if (!running || clearTestingText) testRequests.invalidateCurrent()
+        if (!running || clearTestingText) {
+            clearCurrentTimeout()
+            testRequests.invalidateCurrent()
+        }
         _uiState.update { state ->
             state.copy(
                 isRunning = running,
