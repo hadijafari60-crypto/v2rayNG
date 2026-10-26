@@ -577,72 +577,39 @@ class HealthyManager(
      * - otherwise a failed server gets its old result back until it fails [failsToCondemn] times in a row.
      */
     private suspend fun applyPenaltyRule(batch: List<String>, previous: Map<String, Long>) {
-        // A failed probe is not evidence against a server when Android says the device
-        // currently has no validated internet connection (for example, captive Wi-Fi).
-        if (!host.hasInternet()) {
-            val restored = withContext(io) {
-                var changed = false
-                for (guid in batch) {
-                    val result = dataSource.decodeAffiliationInfo(guid)?.testDelayMillis ?: 0L
-                    if (result < 0L) {
-                        com.v2ray.ang.handler.MmkvManager.encodeServerTestDelayMillis(
-                            guid,
-                            previous[guid] ?: 0L
-                        )
-                        changed = true
-                    }
-                }
-                changed
+        val hasInternet = host.hasInternet()
+        val decision = withContext(io) {
+            val results = batch.associateWith {
+                dataSource.decodeAffiliationInfo(it)?.testDelayMillis ?: 0L
             }
-            if (restored) host.reloadGroups()
+            HealthyPenaltyRules.evaluate(
+                results = results,
+                previous = previous,
+                currentFailStreaks = failStreak.toMap(),
+                hasInternet = hasInternet,
+                failsToCondemn = failsToCondemn,
+            ).also { outcome ->
+                outcome.restoredResults.forEach { (guid, oldResult) ->
+                    com.v2ray.ang.handler.MmkvManager.encodeServerTestDelayMillis(guid, oldResult)
+                }
+                outcome.clearFailStreaks.forEach { guid -> failStreak.remove(guid) }
+                outcome.nextFailStreaks.forEach { (guid, streak) -> failStreak[guid] = streak }
+                outcome.clearSuspects.forEach { guid -> suspectGuids.remove(guid) }
+            }
+        }
+
+        if (decision.changed) host.reloadGroups()
+        if (!hasInternet) {
             log("Periodic test ignored: no validated internet connection; server penalties skipped")
             say("Healthy check: internet unavailable, server penalties ignored")
             return
         }
 
-        val outcome = withContext(io) {
-            val results = batch.associateWith {
-                dataSource.decodeAffiliationInfo(it)?.testDelayMillis ?: 0L
-            }
-            val failedCount = results.values.count { it < 0L }
-            val okCount = results.values.count { it > 0L }
-            val networkProblem = batch.size >= 3 && failedCount == batch.size
-            var changed = false
-            var condemned = 0
-            for (guid in batch) {
-                val now = results[guid] ?: 0L
-                val old = previous[guid] ?: 0L
-                when {
-                    now < 0L && networkProblem -> {
-                        com.v2ray.ang.handler.MmkvManager.encodeServerTestDelayMillis(guid, old)
-                        changed = true
-                    }
-
-                    now < 0L -> {
-                        val streak = (failStreak[guid] ?: 0) + 1
-                        failStreak[guid] = streak
-                        if (streak < failsToCondemn) {
-                            com.v2ray.ang.handler.MmkvManager.encodeServerTestDelayMillis(guid, old)
-                            changed = true
-                        } else {
-                            condemned++
-                        }
-                    }
-
-                    now > 0L -> {
-                        failStreak.remove(guid)
-                        suspectGuids.remove(guid) // it answered again, it may be a backup again
-                    }
-                }
-            }
-            PenaltyOutcome(changed, networkProblem, condemned, okCount, failedCount)
-        }
-        log("Periodic done: ${outcome.ok} ok, ${outcome.failed} failed")
-        if (outcome.changed) host.reloadGroups()
-        if (outcome.networkProblem) {
+        log("Periodic done: ${decision.okCount} ok, ${decision.failedCount} failed")
+        if (decision.networkProblem) {
             say("Healthy check: all servers failed, ignoring (network problem?)")
-        } else if (outcome.condemned > 0) {
-            say("Healthy check: ${outcome.condemned} server(s) marked dead")
+        } else if (decision.condemnedCount > 0) {
+            say("Healthy check: ${decision.condemnedCount} server(s) marked dead")
         }
     }
 
