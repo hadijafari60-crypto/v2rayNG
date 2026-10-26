@@ -2,25 +2,25 @@ package com.v2ray.ang.ui.main
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class MainTestRequestsTest {
     @Test
-    fun onlyTheLatestCurrentRequestCanFinishOnce() {
+    fun overlappingCurrentRequestsAreRejectedAndLateResultsCannotReplaceOwner() {
         val requests = MainTestRequests()
         assertFalse(requests.isTesting)
         assertFalse(requests.completeCurrent(""))
-        val first = requests.beginCurrent()
-        val second = requests.beginCurrent()
-        assertNotEquals(first, second)
-        assertFalse(requests.completeCurrent(first))
+        val first = requests.beginCurrent(MainTestRequests.CurrentOwner.GUARD)!!
+        assertNull(requests.beginCurrent(MainTestRequests.CurrentOwner.MANUAL))
+        assertEquals(MainTestRequests.CurrentOwner.GUARD, requests.currentOwner)
+        assertFalse(requests.completeCurrent("stale-id"))
         assertTrue(requests.isTesting)
-        assertTrue(requests.completeCurrent(second))
-        assertFalse(requests.completeCurrent(second))
+        assertTrue(requests.completeCurrent(first))
+        assertFalse(requests.completeCurrent(first))
         assertFalse(requests.isTesting)
+        assertNull(requests.currentOwner)
     }
 
     @Test
@@ -50,13 +50,27 @@ class MainTestRequestsTest {
     }
 
     @Test
-    fun currentResultDoesNotFinishAnIndependentBulkTest() {
+    fun currentRequestCannotStartWhileBulkTestOwnsTheService() {
         val requests = MainTestRequests()
         val bulk = requests.beginBulk("") // All servers is a valid group ID.
-        val current = requests.beginCurrent()
-        assertTrue(requests.completeCurrent(current))
+        assertNull(requests.beginCurrent())
+        assertEquals(bulk, requests.bulk)
         assertTrue(requests.isTesting)
         assertEquals(bulk, requests.completeBulk(bulk.id))
         assertFalse(requests.isTesting)
+    }
+
+    @Test
+    fun guardAndManualRequestsKeepTheirOwnerUntilCompletionOrInvalidation() {
+        val requests = MainTestRequests()
+        val manual = requests.beginCurrent(MainTestRequests.CurrentOwner.MANUAL)!!
+        assertEquals(MainTestRequests.CurrentOwner.MANUAL, requests.currentOwner)
+        requests.invalidateCurrent()
+        assertNull(requests.currentOwner)
+        assertFalse(requests.completeCurrent(manual))
+        val guard = requests.beginCurrent(MainTestRequests.CurrentOwner.GUARD)!!
+        assertEquals(MainTestRequests.CurrentOwner.GUARD, requests.currentOwner)
+        assertTrue(requests.completeCurrent(guard))
+        assertNull(requests.currentOwner)
     }
 }
