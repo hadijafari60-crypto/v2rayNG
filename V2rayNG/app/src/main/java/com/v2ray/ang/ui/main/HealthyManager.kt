@@ -32,6 +32,8 @@ interface HealthyHost {
     suspend fun reloadGroups()
     fun connectToServer(guid: String)
     fun toast(message: String)
+    fun toastSuccess(message: String)
+    fun toastError(message: String)
     fun toastFailure()
     fun hasInternet(): Boolean
     fun copyText(label: String, text: String)
@@ -63,10 +65,15 @@ class HealthyManager(
         }
     }
 
-    // Log it and show it as a toast
+    // Healthy Manager notices use the same green style as the app's success messages.
     private fun say(message: String) {
         log(message)
-        host.toast(message)
+        host.toastSuccess(message)
+    }
+
+    private fun sayError(message: String) {
+        log(message)
+        host.toastError(message)
     }
 
     fun logText(): String = synchronized(logLines) { logLines.joinToString("\n") }
@@ -255,7 +262,7 @@ class HealthyManager(
         autoConnectGuid = null
         if (autoConnectRetries >= 3) {
             autoConnectRetries = 0
-            say("Auto-connect failed, please choose a server manually")
+            sayError("Auto-connect failed, please choose a server manually")
             return
         }
         autoConnectRetries++
@@ -398,7 +405,11 @@ class HealthyManager(
                 }
 
                 host.reloadGroups()
-                say(summary)
+                if (summary.startsWith("No working server found")) {
+                    sayError(summary)
+                } else {
+                    say(summary)
+                }
 
                 val fastestGuid = withContext(io) {
                     dataSource.getServerGuidList(healthy.guid)
