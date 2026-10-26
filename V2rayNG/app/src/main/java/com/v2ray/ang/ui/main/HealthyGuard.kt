@@ -36,7 +36,7 @@ interface GuardPorts {
     val isRunning: Boolean
     val refreshActive: Boolean
     val hasBulkTest: Boolean
-    fun hasInternet(): Boolean
+    suspend fun hasInternet(): Boolean
     fun recentDownBytes(): Long
     fun log(message: String)
     fun say(message: String)
