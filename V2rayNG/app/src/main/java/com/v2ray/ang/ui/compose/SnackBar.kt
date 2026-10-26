@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarVisuals
 import androidx.compose.material3.Surface
@@ -31,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
+import com.v2ray.ang.extension.cancelFallbackToast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -121,6 +121,7 @@ fun AppSnackbarBridge(
 
     LaunchedEffect(controller, lifecycleOwner) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            cancelFallbackToast()
             AppSnackbarManager.messages.collect { event ->
                 controller.show(
                     message = event.message,
@@ -145,32 +146,31 @@ fun AppSnackbarHost(
     modifier: Modifier = Modifier
 ) {
     BoxWithConstraints(modifier = modifier) {
+        // Render only the current item without Material3's animated cross-fade. Replacing the
+        // current message must never draw an outgoing gray snackbar over the incoming green one.
+        val data = hostState.currentSnackbarData
         val maxSnackbarWidth = maxWidth * ToastMaxWidthFraction
         val density = LocalDensity.current
         val navigationBarHeight = with(density) {
             WindowInsets.navigationBars.getBottom(this).toDp()
         }
 
-        SnackbarHost(
-            hostState = hostState,
-            modifier = Modifier.fillMaxSize()
-        ) { data ->
-            val type = (data.visuals as? AppSnackbarVisuals)?.type ?: ToastType.NORMAL
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = ToastBottomOffset + navigationBarHeight),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            if (data != null) {
+                val type = (data.visuals as? AppSnackbarVisuals)?.type ?: ToastType.NORMAL
+                val isDark = LocalDarkTheme.current
+                val bgColor = when (type) {
+                    ToastType.NORMAL -> if (isDark) toastNormalBgDark else toastNormalBgLight
+                    ToastType.SUCCESS -> toastSuccessBg
+                    ToastType.ERROR -> toastErrorBg
+                    ToastType.INFO -> toastInfoBg
+                }
 
-            val isDark = LocalDarkTheme.current
-            val bgColor = when (type) {
-                ToastType.NORMAL -> if (isDark) toastNormalBgDark else toastNormalBgLight
-                ToastType.SUCCESS -> toastSuccessBg
-                ToastType.ERROR -> toastErrorBg
-                ToastType.INFO -> toastInfoBg
-            }
-
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(bottom = ToastBottomOffset + navigationBarHeight),
-                contentAlignment = Alignment.BottomCenter
-            ) {
                 Surface(
                     modifier = Modifier
                         .wrapContentWidth()

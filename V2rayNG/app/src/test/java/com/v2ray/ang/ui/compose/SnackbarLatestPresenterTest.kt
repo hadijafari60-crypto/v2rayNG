@@ -36,5 +36,30 @@ class SnackbarLatestPresenterTest {
             listOf("first-start", "first-cancelled", "second-start", "second-end"),
             events
         )
+    } 
+    @Test
+    fun burstKeepsOnlyLatestRequestAndWaitsForPreviousCleanup() = runTest {
+        val presenter = SnackbarLatestPresenter(backgroundScope)
+        val events = mutableListOf<String>()
+        val firstStarted = CompletableDeferred<Unit>()
+
+        presenter.show {
+            events += "first-start"
+            firstStarted.complete(Unit)
+            try {
+                awaitCancellation()
+            } finally {
+                events += "first-cleanup"
+            }
+        }
+        runCurrent()
+        firstStarted.await()
+
+        presenter.show { events += "superseded" }
+        presenter.show { events += "latest" }
+        runCurrent()
+
+        assertEquals(listOf("first-start", "first-cleanup", "latest"), events)
     }
+
 }

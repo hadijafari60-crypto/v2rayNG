@@ -230,8 +230,9 @@ class HealthyManager(
         startPeriodic()
     }
 
-    fun noteConnectRequest(guid: String) {
+    fun noteConnectRequest(guid: String, userInitiated: Boolean) {
         autoConnectGuid = guid
+        if (userInitiated) guard.onConnectRequested()
     }
 
     fun onStartSuccess() {

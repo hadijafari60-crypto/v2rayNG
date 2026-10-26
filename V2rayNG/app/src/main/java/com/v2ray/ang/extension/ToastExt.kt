@@ -18,6 +18,14 @@ private fun runOnMain(block: () -> Unit) {
     }
 }
 
+/** Cancel the Android fallback as soon as the Compose snackbar host becomes active. */
+fun cancelFallbackToast() {
+    runOnMain {
+        fallbackToast?.cancel()
+        fallbackToast = null
+    }
+}
+
 private fun Context.dispatchMessage(
     message: CharSequence,
     type: ToastType,
@@ -29,11 +37,7 @@ private fun Context.dispatchMessage(
         long = long
     )
     if (handledBySnackbar) {
-        // A fallback Android toast may still be visible as the Compose host becomes active.
-        runOnMain {
-            fallbackToast?.cancel()
-            fallbackToast = null
-        }
+        cancelFallbackToast()
         return
     }
     val appContext = applicationContext

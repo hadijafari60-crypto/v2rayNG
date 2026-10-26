@@ -313,6 +313,26 @@ class HealthyGuardTest {
     }
 
     @Test
+    fun userSelectingDeadServerImmediatelyPreemptsBulkAndChecksItAfterSettle() = runTest {
+        val (p, g) = newGuard {
+            hasBulkTest = true
+            selectionInfo = GuardSelection("A", -1L, true)
+            probeAnswer = { -1L }
+        }
+        g.onRunning(true)
+        advance(1_000)
+
+        g.onConnectRequested()
+
+        assertEquals(1, p.bulkCancellations)
+        assertFalse(p.hasBulkTest)
+        advance(10_000)
+        assertEquals(1, p.probes)
+        assertEquals(1, p.switches.size)
+        assertEquals("B0", p.switches.single().second)
+    }
+
+    @Test
     fun testsWaitWhileAnotherBulkTestRuns() = runTest {
         val (p, g) = newGuard { hasBulkTest = true }
         g.onRunning(true)

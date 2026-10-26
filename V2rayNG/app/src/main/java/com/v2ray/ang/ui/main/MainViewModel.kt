@@ -126,9 +126,9 @@ class MainViewModel(
     private val _connectRequests = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val connectRequests: SharedFlow<Unit> = _connectRequests.asSharedFlow()
 
-    fun connectToServer(guid: String) {
-        healthy.noteConnectRequest(guid)
+    fun connectToServer(guid: String, userInitiated: Boolean = true) {
         updateSelectedGuid(guid)
+        healthy.noteConnectRequest(guid, userInitiated)
         _connectRequests.tryEmit(Unit)
     }
 
@@ -180,7 +180,7 @@ class MainViewModel(
             }
 
             override fun connectToServer(guid: String) {
-                this@MainViewModel.connectToServer(guid)
+                this@MainViewModel.connectToServer(guid, userInitiated = false)
             }
 
             override fun toast(message: String) {

@@ -102,6 +102,7 @@ class HealthyGuard(
     private var settleUntil = 0L       // no check before this (the tunnel is still coming up)
     private var connectedAt = 0L
     private var connectPending = false // the next check is the first one on a new connection
+    private var manualConnectPending = false // explicit user selection takes priority over background tests
     private var skipCooldown = false   // the user picked this server, or it is marked dead
     private var blocked: String? = null
     private var checking = false
@@ -151,6 +152,20 @@ class HealthyGuard(
         } else {
             loopJob = scope.launch { monitor() }
         }
+    }
+
+    /** A user-selected server must not wait for a background batch to finish. */
+    fun onConnectRequested() {
+        manualConnectPending = true
+        connectPending = true
+        skipCooldown = true
+        blocked = null
+        dueAt = minOf(dueAt, ports.now)
+        if (ports.hasBulkTest && !ports.refreshActive) {
+            ports.log("Manual server selection preempts the active bulk test")
+            ports.cancelBulkTest()
+        }
+        wake.trySend(Unit)
     }
 
     /** The answer of the current-server test. Results nobody asked for are ignored. */
@@ -262,8 +277,10 @@ class HealthyGuard(
             if (connectPending) {
                 connectPending = false
                 val selected = ports.selection()
+                val manualSelection = manualConnectPending
+                manualConnectPending = false
                 if (selected != null) {
-                    if (selected.manual || selected.storedMs < 0L) skipCooldown = true
+                    if (manualSelection || selected.manual || selected.storedMs < 0L) skipCooldown = true
                     if (selected.storedMs < 0L) {
                         ports.log("Selected server is marked dead, checking it now")
                         oneBad = true // one bad sample is enough
@@ -307,7 +324,7 @@ class HealthyGuard(
         if (!ports.hasBulkTest) return true
         if (!connectPending) return false
         val selected = ports.selection() ?: return false
-        if (!selected.manual && selected.storedMs >= 0L) return false
+        if (!manualConnectPending && !selected.manual && selected.storedMs >= 0L) return false
         ports.log("Prioritizing selected/unhealthy server; cancelling bulk test")
         ports.cancelBulkTest()
         return !ports.hasBulkTest
