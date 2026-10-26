@@ -110,6 +110,9 @@ class HealthyManager(
     @Volatile
     private var periodicRunning = false
 
+    @Volatile
+    private var periodicBatchPreempted = false
+
     private data class PenaltyOutcome(
         val changed: Boolean,
         val networkProblem: Boolean,
@@ -143,6 +146,7 @@ class HealthyManager(
         override val hasCurrentTest: Boolean get() = host.hasActiveTest && !host.hasBulkTest
 
         override fun cancelBulkTest() {
+            if (periodicRunning) periodicBatchPreempted = true
             host.cancelBulkTest()
         }
 
@@ -552,6 +556,7 @@ class HealthyManager(
 
         val (healthyId, batch, previous) = prepared
         periodicRunning = true
+        periodicBatchPreempted = false
         try {
             log("Periodic test of ${batch.size} Healthy servers")
             val requestId = host.beginBulkTest(healthyId) ?: return
@@ -569,7 +574,15 @@ class HealthyManager(
                 delay(500)
                 waited += 500
             }
-            if (host.isBulkTest(requestId)) host.cancelAllTests()
+            if (periodicBatchPreempted) {
+                log("Periodic test preempted by selected-server check; penalties skipped")
+                return
+            }
+            if (host.isBulkTest(requestId)) {
+                host.cancelBulkTest()
+                log("Periodic test timed out; incomplete results ignored")
+                return
+            }
             delay(500)
             applyPenaltyRule(batch, previous)
         } finally {
