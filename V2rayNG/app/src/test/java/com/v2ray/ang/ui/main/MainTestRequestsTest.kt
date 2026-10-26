@@ -51,6 +51,19 @@ class MainTestRequestsTest {
     }
 
     @Test
+    fun bulkCancellationIsScopedToItsRequestId() {
+        val requests = MainTestRequests()
+        val first = requests.beginBulk("first", MainTestRequests.BulkOwner.SELECTED_SERVER)!!
+        assertNull(requests.cancelBulk("stale-id"))
+        assertEquals(first, requests.bulk)
+        assertEquals(first, requests.cancelBulk(first.id))
+        assertTrue(requests.wasBulkCancelled(first.id))
+
+        val next = requests.beginBulk("next")!!
+        assertFalse(requests.wasBulkCancelled(next.id))
+    }
+
+    @Test
     fun currentRequestCannotStartWhileBulkTestOwnsTheService() {
         val requests = MainTestRequests()
         val bulk = requests.beginBulk("")!! // All servers is a valid group ID.

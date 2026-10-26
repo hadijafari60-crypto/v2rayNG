@@ -284,7 +284,11 @@ class MainViewModel(
                         if (reachable) return@withContext true
                     }
                     false
-                } catch (e: Exception) { false }
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (e: Exception) {
+                    false
+                }
             }
 
         }
