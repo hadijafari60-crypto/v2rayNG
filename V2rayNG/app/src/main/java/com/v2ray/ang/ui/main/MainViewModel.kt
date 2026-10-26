@@ -180,6 +180,14 @@ class MainViewModel(
                 this@MainViewModel.toast(message)
             }
 
+            override fun toastSuccess(message: String) {
+                this@MainViewModel.toastSuccess(message)
+            }
+
+            override fun toastError(message: String) {
+                this@MainViewModel.toastError(message)
+            }
+
             override fun toastFailure() {
                 this@MainViewModel.toastError(R.string.toast_failure)
             }
