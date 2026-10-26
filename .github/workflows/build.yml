@@ -9,7 +9,7 @@ on:
   push:
     branches:
       - master
-      - dev
+      - work/master-baseline
 
 permissions:
   contents: write
