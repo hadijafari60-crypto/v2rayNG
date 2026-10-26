@@ -1,7 +1,7 @@
-commit: d0c2d6c1b9b9ef2cf40094f8617b18b9885743b1
+commit: 804863e0fb9085726f8b246c6704015cbd273eaa
 ref: work/healthy-manager-from-build-61
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40386705190
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40386946008
 
 ## Kotlin compile errors (e: lines)
 
@@ -49,7 +49,7 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 3m 5s
+BUILD SUCCESSFUL in 3m 10s
 82 actionable tasks: 82 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
 
@@ -76,8 +76,8 @@ Consider enabling configuration cache to speed up this build: https://docs.gradl
 > Task :app:prePlaystoreDebugUnitTestBuild UP-TO-DATE
 > Task :app:javaPreCompilePlaystoreDebugUnitTest
 > Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
-> Task :app:bundlePlaystoreDebugClassesToCompileJar
 > Task :app:bundlePlaystoreDebugClassesToRuntimeJar
+> Task :app:bundlePlaystoreDebugClassesToCompileJar
 > Task :app:compilePlaystoreDebugUnitTestKotlin
 > Task :app:compilePlaystoreDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :app:processPlaystoreDebugUnitTestJavaRes
@@ -91,6 +91,6 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 15s
+BUILD SUCCESSFUL in 14s
 28 actionable tasks: 6 executed, 22 up-to-date
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
