@@ -188,10 +188,6 @@ class MainViewModel(
                 this@MainViewModel.toastError(message)
             }
 
-            override fun toastInfo(message: String) {
-                this@MainViewModel.toastInfo(message)
-            }
-
             override fun toastFailure() {
                 this@MainViewModel.toastError(R.string.toast_failure)
             }
