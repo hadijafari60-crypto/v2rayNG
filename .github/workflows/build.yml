@@ -10,7 +10,6 @@ on:
     branches:
       - master
       - work/master-baseline
-      - work/monotonic-deadlines
 
 permissions:
   contents: write
