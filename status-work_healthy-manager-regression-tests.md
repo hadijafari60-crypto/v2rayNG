@@ -1,7 +1,7 @@
-commit: 2c8b234c17f715d400b4378ac25f1393b71446c1
+commit: 32c4ae1a08d68ef654aaad90c33f50e5b8f5efab
 ref: work/healthy-manager-regression-tests
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40292118510
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40292166699
 
 ## Kotlin compile errors (e: lines)
 
@@ -11,10 +11,11 @@ run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40292118510
 tests="1" skipped="0" failures="0" errors="0"
 tests="18" skipped="0" failures="0" errors="0"
 tests="5" skipped="0" failures="0" errors="0"
+tests="5" skipped="0" failures="0" errors="0"
 
 ## Last 40 lines of build.log
-> Task :app:mergeFdroidDebugJavaResource
-> Task :app:dexBuilderFdroidDebug
+> Task :app:writePlaystoreDebugAppMetadata
+> Task :app:writePlaystoreDebugSigningConfigVersions
 > Task :app:mergeProjectDexFdroidDebug
 > Task :app:packageFdroidDebug
 > Task :app:createFdroidDebugApkListingFileRedirect
@@ -50,7 +51,7 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 3m 7s
+BUILD SUCCESSFUL in 3m 10s
 82 actionable tasks: 82 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
 
@@ -74,8 +75,8 @@ Consider enabling configuration cache to speed up this build: https://docs.gradl
 > Task :app:prePlaystoreDebugUnitTestBuild UP-TO-DATE
 > Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
 > Task :app:javaPreCompilePlaystoreDebugUnitTest
-> Task :app:bundlePlaystoreDebugClassesToRuntimeJar
 > Task :app:bundlePlaystoreDebugClassesToCompileJar
+> Task :app:bundlePlaystoreDebugClassesToRuntimeJar
 
 > Task :app:compilePlaystoreDebugUnitTestKotlin
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/test/java/com/v2ray/ang/ui/compose/SnackbarSerialQueueTest.kt:34:9 This declaration needs opt-in. Its usage should be marked with '@kotlinx.coroutines.ExperimentalCoroutinesApi' or '@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)'
@@ -92,6 +93,6 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 12s
+BUILD SUCCESSFUL in 11s
 28 actionable tasks: 6 executed, 22 up-to-date
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
