@@ -51,7 +51,7 @@ class HealthyManager(
     private val healthyName = "Healthy"   // name of the pool group
     private val maxHealthy = 50           // max servers kept in the pool
 
-    // ---------- Event log (kept in memory, copied to the clipboard at the end of a refresh) ----------
+    // ---------- Healthy event log ----------
     private val logLines = ArrayDeque<String>()
     private val logTime = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.US)
     private val logMaxLines = 80
@@ -61,6 +61,9 @@ class HealthyManager(
             logLines.addLast("${logTime.format(java.util.Date())} $message")
             while (logLines.size > logMaxLines) logLines.removeFirst()
         }
+        // Logcat defaults to WARNING, so use warning priority for Healthy diagnostics
+        // to make them visible in the in-app Logcat screen without changing preferences.
+        LogUtil.w(AppConfig.TAG, "Healthy: $message")
     }
 
     // Log it and show it as a toast
@@ -488,7 +491,6 @@ class HealthyManager(
                 autoConnectOnFirstGood = false
                 refreshActive = false
                 lastPeriodicMs = SystemClock.elapsedRealtime() // the refresh just tested everything
-                host.copyText("Healthy log", logText()) // temporary: paste it in the chat for diagnosis
                 guard.onRefreshFinished(outcome)
             }
         }
