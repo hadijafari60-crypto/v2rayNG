@@ -498,6 +498,11 @@ class HealthyManager(
             val healthy = dataSource.getSubscriptions()
                 .firstOrNull { it.subscription.remarks == healthyName }
                 ?: return@withContext null
+            // Suspects get priority only for a bounded window. Expire old marks so a
+            // server that keeps failing cannot monopolize the first slots forever.
+            val nowMs = System.currentTimeMillis()
+            suspectGuids.entries.removeIf { nowMs - it.value >= suspectMs }
+
             val currentGuid = host.selectedGuid
             val currentId = currentGuid?.let { dataSource.decodeServerConfig(it)?.duplicateIdentity() }
             val candidates = dataSource.getServerGuidList(healthy.guid).filter { guid ->
@@ -508,8 +513,11 @@ class HealthyManager(
                 !(id != null && id == currentId)
             }
             if (candidates.isEmpty()) return@withContext null
-            // Servers we just left come first, then the rotating part of the pool
-            val suspects = candidates.filter { suspectGuids.containsKey(it) }.take(periodicBatchSize)
+            // Test the oldest still-valid suspects first, then fill from the rotating pool.
+            val suspects = candidates
+                .filter { suspectGuids.containsKey(it) }
+                .sortedBy { suspectGuids[it] ?: Long.MAX_VALUE }
+                .take(periodicBatchSize)
             val rest = candidates.filter { it !in suspects }
             val fillCount = minOf(periodicBatchSize - suspects.size, rest.size)
             val start = if (rest.isEmpty()) 0 else periodicCursor % rest.size
