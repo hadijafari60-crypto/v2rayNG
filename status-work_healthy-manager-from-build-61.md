@@ -1,7 +1,7 @@
-commit: c684f506f928f345a5eaee06655d76e764146ec2
+commit: c12f9757c8ffccce44480de3c3703f601516f1dc
 ref: work/healthy-manager-from-build-61
 job status: failure
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40422002784
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40422084515
 
 ## Kotlin compile errors (e: lines)
 e: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/ui/main/HealthyManager.kt:30:40 'public' function exposes its 'internal' parameter type containing declaration 'MainTestRequests'.
@@ -13,7 +13,7 @@ e: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/
 
 ## Last 40 lines of build.log
 * What went wrong:
-Execution failed for task ':app:compileFdroidDebugKotlin' (registered by plugin 'org.jetbrains.kotlin.android').
+Execution failed for task ':app:compilePlaystoreDebugKotlin' (registered by plugin 'org.jetbrains.kotlin.android').
 > A failure occurred while executing org.jetbrains.kotlin.compilerRunner.btapi.BuildToolsApiCompilationWork
    > Kotlin compiler: EXPOSED_PARAMETER_TYPE
        Kotlin compiler error
@@ -30,7 +30,7 @@ Execution failed for task ':app:compileFdroidDebugKotlin' (registered by plugin 
 2: Task failed with an exception.
 -----------
 * What went wrong:
-Execution failed for task ':app:compilePlaystoreDebugKotlin' (registered by plugin 'org.jetbrains.kotlin.android').
+Execution failed for task ':app:compileFdroidDebugKotlin' (registered by plugin 'org.jetbrains.kotlin.android').
 > A failure occurred while executing org.jetbrains.kotlin.compilerRunner.btapi.BuildToolsApiCompilationWork
    > Kotlin compiler: EXPOSED_PARAMETER_TYPE
        Kotlin compiler error
@@ -50,7 +50,7 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD FAILED in 2m 4s
+BUILD FAILED in 1m 21s
 68 actionable tasks: 68 executed
 
 ## Last 40 lines of test.log
