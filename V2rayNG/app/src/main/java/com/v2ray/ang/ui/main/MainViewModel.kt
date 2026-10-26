@@ -192,10 +192,12 @@ class MainViewModel(
                     val caps = cm.getNetworkCapabilities(network)
                     caps != null &&
                         caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                        caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) &&
                         !caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
                 }
             } catch (e: Exception) {
-                true
+                // If connectivity cannot be determined, do not treat the network as healthy.
+                false
             }
 
             override fun copyText(label: String, text: String) {
