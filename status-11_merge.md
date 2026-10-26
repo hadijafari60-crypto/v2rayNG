@@ -1,7 +1,7 @@
-commit: 42b26f82ac89d9520dbab5b3c34f4b092fe756d1
+commit: d36b59894ecffe4c2c6787b56f4f41e00ac34f3f
 ref: 11/merge
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40291034549
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40292125481
 
 ## Kotlin compile errors (e: lines)
 
@@ -13,12 +13,9 @@ tests="18" skipped="0" failures="0" errors="0"
 tests="5" skipped="0" failures="0" errors="0"
 
 ## Last 40 lines of build.log
-> Task :app:mergeFdroidDebugJavaResource
+> Task :app:compilePlaystoreDebugKotlin
 > Task :app:dexBuilderFdroidDebug
 > Task :app:mergeProjectDexFdroidDebug
-> Task :app:packageFdroidDebug
-> Task :app:createFdroidDebugApkListingFileRedirect
-> Task :app:assembleFdroidDebug
 
 > Task :app:compilePlaystoreDebugKotlin
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:501:25 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
@@ -36,6 +33,9 @@ w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/
 > Task :app:processPlaystoreDebugJavaRes
 > Task :app:mergePlaystoreDebugJavaResource
 > Task :app:dexBuilderPlaystoreDebug
+> Task :app:packageFdroidDebug
+> Task :app:createFdroidDebugApkListingFileRedirect
+> Task :app:assembleFdroidDebug
 > Task :app:mergeProjectDexPlaystoreDebug
 > Task :app:packagePlaystoreDebug
 > Task :app:createPlaystoreDebugApkListingFileRedirect
@@ -50,11 +50,12 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 3m 10s
+BUILD SUCCESSFUL in 2m 15s
 82 actionable tasks: 82 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
 
 ## Last 40 lines of test.log
+> Task :app:processPlaystoreDebugNavigationResources UP-TO-DATE
 > Task :app:compilePlaystoreDebugNavigationResources UP-TO-DATE
 > Task :app:extractPlaystoreDebugSupportedLocales UP-TO-DATE
 > Task :app:generatePlaystoreDebugLocaleConfig UP-TO-DATE
@@ -72,11 +73,10 @@ Consider enabling configuration cache to speed up this build: https://docs.gradl
 > Task :app:javaPreCompilePlaystoreDebug UP-TO-DATE
 > Task :app:compilePlaystoreDebugJavaWithJavac UP-TO-DATE
 > Task :app:prePlaystoreDebugUnitTestBuild UP-TO-DATE
-> Task :app:javaPreCompilePlaystoreDebugUnitTest
 > Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
+> Task :app:javaPreCompilePlaystoreDebugUnitTest
 > Task :app:bundlePlaystoreDebugClassesToCompileJar
 > Task :app:bundlePlaystoreDebugClassesToRuntimeJar
-
 > Task :app:compilePlaystoreDebugUnitTestKotlin
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/test/java/com/v2ray/ang/ui/compose/SnackbarSerialQueueTest.kt:34:9 This declaration needs opt-in. Its usage should be marked with '@kotlinx.coroutines.ExperimentalCoroutinesApi' or '@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)'
 
@@ -92,6 +92,6 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 12s
+BUILD SUCCESSFUL in 40s
 28 actionable tasks: 6 executed, 22 up-to-date
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
