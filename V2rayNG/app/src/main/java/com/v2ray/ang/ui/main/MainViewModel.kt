@@ -167,6 +167,11 @@ class MainViewModel(
 
             // Re-check after loading the profile: another operation may have started meanwhile.
             if (healthy.isOperationBusy() || testRequests.isTesting) {
+                // A newer tap wins even if the first tap was still loading its profile.
+                if (pendingSelectionTest != null) {
+                    LogUtil.w(AppConfig.TAG, "Healthy: pending selected-server connection superseded by a later tap")
+                    pendingSelectionTest = null
+                }
                 toast(R.string.toast_test_in_progress)
                 healthy.connectToFastestKnown(excludeGuid = guid)
                 return@launch
