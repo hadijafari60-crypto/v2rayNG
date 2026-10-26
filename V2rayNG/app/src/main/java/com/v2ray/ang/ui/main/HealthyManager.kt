@@ -236,7 +236,7 @@ class HealthyManager(
             log("First good server is the current one, staying")
             return
         }
-        say("Connecting to first fast server (${delayMillis}ms)...")
+        log("Connecting to first fast server (${delayMillis}ms)...")
         host.connectToServer(guid)
     }
 
