@@ -42,6 +42,7 @@ interface GuardPorts {
     fun say(message: String)
     fun startProbe()
     fun cancelProbe()
+    fun cancelBulkTest()
     suspend fun selection(): GuardSelection?
     suspend fun pickBackup(): GuardSwitch?
     fun markSuspect(guid: String)
@@ -238,12 +239,16 @@ class HealthyGuard(
 
     private suspend fun runCheck() {
         if (!ports.isRunning) return
-        if (ports.refreshActive || ports.hasBulkTest) {
+        if (ports.refreshActive) {
             dueAt = ports.now + cfg.deferMs
             return
         }
         if (!ports.hasInternet()) {
             block("nointernet", "No internet, not switching", NEVER, say = true)
+            return
+        }
+        if (!canProceedDuringBulkTest()) {
+            dueAt = ports.now + cfg.deferMs
             return
         }
         checking = true
@@ -271,7 +276,7 @@ class HealthyGuard(
                 ports.log("Bad sample, confirming in ${cfg.confirmDelayMs / 1000}s")
                 delay(cfg.confirmDelayMs.milliseconds)
                 if (!ports.isRunning) return
-                if (ports.refreshActive || ports.hasBulkTest) {
+                if (ports.refreshActive || !canProceedDuringBulkTest()) {
                     dueAt = ports.now + cfg.deferMs
                     return
                 }
@@ -287,6 +292,20 @@ class HealthyGuard(
         } finally {
             checking = false
         }
+    }
+
+    /**
+     * Only a newly selected connection can preempt a periodic batch. Ordinary idle checks still
+     * wait, so a long-running batch is not repeatedly interrupted by the guard.
+     */
+    private suspend fun canProceedDuringBulkTest(): Boolean {
+        if (!ports.hasBulkTest) return true
+        if (!connectPending) return false
+        val selected = ports.selection() ?: return false
+        if (!selected.manual && selected.storedMs >= 0L) return false
+        ports.log("Prioritizing selected/unhealthy server; cancelling bulk test")
+        ports.cancelBulkTest()
+        return !ports.hasBulkTest
     }
 
     private fun isGood(delayMillis: Long): Boolean = delayMillis in 1L..cfg.maxDelayMs
@@ -320,7 +339,7 @@ class HealthyGuard(
     // ------------------------------------------------------------------ switching
 
     private suspend fun trySwitch() {
-        if (ports.hasBulkTest) {
+        if (!canProceedDuringBulkTest()) {
             block("bulk", "Switch postponed: another test is running", ports.now + cfg.deferMs)
             return
         }

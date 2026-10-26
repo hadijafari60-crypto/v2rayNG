@@ -24,11 +24,13 @@ interface HealthyHost {
     val isRunning: Boolean
     val selectedGuid: String?
     val hasBulkTest: Boolean
+    val hasActiveTest: Boolean
     fun isBulkTest(requestId: String): Boolean
     fun beginBulkTest(groupId: String): String?
     fun showTesting()
     fun startCurrentServerTest()
     fun cancelAllTests()
+    fun cancelBulkTest()
     suspend fun reloadGroups()
     fun connectToServer(guid: String)
     fun toast(message: String)
@@ -138,6 +140,10 @@ class HealthyManager(
         override val isRunning: Boolean get() = host.isRunning
         override val refreshActive: Boolean get() = this@HealthyManager.refreshActive
         override val hasBulkTest: Boolean get() = host.hasBulkTest
+
+        override fun cancelBulkTest() {
+            host.cancelBulkTest()
+        }
 
         override fun hasInternet(): Boolean = host.hasInternet()
 
@@ -488,7 +494,7 @@ class HealthyManager(
             while (true) {
                 delay(periodicCheckMs)
                 val now = SystemClock.elapsedRealtime()
-                if (!host.isRunning || refreshActive || host.hasBulkTest || periodicRunning) continue
+                if (!host.isRunning || refreshActive || host.hasActiveTest || periodicRunning) continue
                 if (guard.isTroubled) continue                        // current server has a problem, do not add load
                 if (guard.recentlySwitched()) continue                // VPN is still settling after a switch
                 if (now - lastPeriodicMs < periodicIntervalMs) continue

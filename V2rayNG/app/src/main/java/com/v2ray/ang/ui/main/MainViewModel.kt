@@ -142,6 +142,9 @@ class MainViewModel(
             override val selectedGuid: String?
                 get() = uiState.value.selectedGuid
             override val hasBulkTest: Boolean
+                get() = testRequests.bulk != null
+
+            override val hasActiveTest: Boolean
                 get() = testRequests.isTesting
 
             override fun isBulkTest(requestId: String): Boolean =
@@ -165,6 +168,10 @@ class MainViewModel(
                 ) {
                     cancelAllPing()
                 }
+            }
+
+            override fun cancelBulkTest() {
+                if (testRequests.bulk != null) cancelAllPing()
             }
 
             override suspend fun reloadGroups() {

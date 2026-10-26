@@ -77,6 +77,12 @@ class HealthyGuardTest {
             cancelledProbes++
         }
 
+        var bulkCancellations = 0
+        override fun cancelBulkTest() {
+            bulkCancellations++
+            hasBulkTest = false
+        }
+
         override suspend fun selection(): GuardSelection? = selectionInfo
 
         override suspend fun pickBackup(): GuardSwitch? = backupProvider(picks++)
@@ -287,6 +293,22 @@ class HealthyGuardTest {
         g.onStall()
         advance(20_000)
         assertEquals(1, p.probes)
+    }
+
+    @Test
+    fun manuallySelectedDeadServerPreemptsBulkTestAndSwitches() = runTest {
+        val (p, g) = newGuard {
+            hasBulkTest = true
+            selectionInfo = GuardSelection("A", -1L, true)
+            probeAnswer = { -1L }
+        }
+        g.onRunning(true)
+        advance(30_000)
+        assertEquals(1, p.bulkCancellations)
+        assertFalse(p.hasBulkTest)
+        assertEquals(1, p.probes)
+        assertEquals(1, p.switches.size)
+        assertEquals("B0", p.switches.single().second)
     }
 
     @Test

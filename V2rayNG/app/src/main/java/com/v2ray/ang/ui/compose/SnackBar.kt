@@ -77,20 +77,19 @@ class AppSnackbarController(
     val hostState: SnackbarHostState,
     private val scope: CoroutineScope,
 ) {
-    // Serialize messages so a new event waits for the current snackbar to finish.
-    private val messageQueue = SnackbarSerialQueue()
+    // Replace an active snackbar so urgent feedback is not delayed behind a message backlog.
+    private val presenter = SnackbarLatestPresenter(scope)
 
     fun show(message: CharSequence, type: ToastType = ToastType.NORMAL, long: Boolean = false) {
-        scope.launch {
-            messageQueue.run {
-                hostState.showSnackbar(
-                    AppSnackbarVisuals(
-                        message = message.toString(),
-                        type = type,
-                        duration = if (long) SnackbarDuration.Long else SnackbarDuration.Short
-                    )
+        hostState.currentSnackbarData?.dismiss()
+        presenter.show {
+            hostState.showSnackbar(
+                AppSnackbarVisuals(
+                    message = message.toString(),
+                    type = type,
+                    duration = if (long) SnackbarDuration.Long else SnackbarDuration.Short
                 )
-            }
+            )
         }
     }
 }

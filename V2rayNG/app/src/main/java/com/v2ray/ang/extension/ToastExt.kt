@@ -8,6 +8,7 @@ import com.v2ray.ang.ui.compose.AppSnackbarManager
 import com.v2ray.ang.ui.compose.ToastType
 
 private val mainHandler by lazy { Handler(Looper.getMainLooper()) }
+private var fallbackToast: Toast? = null
 
 private fun runOnMain(block: () -> Unit) {
     if (Looper.myLooper() == Looper.getMainLooper()) {
@@ -27,12 +28,20 @@ private fun Context.dispatchMessage(
         type = type,
         long = long
     )
-    if (!handledBySnackbar) {
-        val appContext = applicationContext
-        val duration = if (long) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
+    if (handledBySnackbar) {
+        // A fallback Android toast may still be visible as the Compose host becomes active.
         runOnMain {
-            Toast.makeText(appContext, message, duration).show()
+            fallbackToast?.cancel()
+            fallbackToast = null
         }
+        return
+    }
+    val appContext = applicationContext
+    val duration = if (long) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
+    runOnMain {
+        fallbackToast?.cancel()
+        fallbackToast = Toast.makeText(appContext, message, duration)
+        fallbackToast?.show()
     }
 }
 
