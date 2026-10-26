@@ -1,7 +1,7 @@
-commit: 435ef8ee22fb28dab234cfc3ab93d6711f2fb21c
+commit: 921ce5298584f4c4328e1129b3e60ffbdd7d50e1
 ref: 11/merge
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40307258021
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40307319472
 
 ## Kotlin compile errors (e: lines)
 
@@ -14,6 +14,14 @@ tests="5" skipped="0" failures="0" errors="0"
 tests="5" skipped="0" failures="0" errors="0"
 
 ## Last 40 lines of build.log
+> Task :app:mergeFdroidDebugJavaResource
+> Task :app:dexBuilderFdroidDebug
+> Task :app:mergeProjectDexFdroidDebug
+> Task :app:packageFdroidDebug
+> Task :app:createFdroidDebugApkListingFileRedirect
+> Task :app:assembleFdroidDebug
+
+> Task :app:compilePlaystoreDebugKotlin
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:501:25 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:504:43 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:505:21 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
@@ -25,19 +33,11 @@ w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/util/HttpUtil.kt:202:45 Unnecessary safe call on a non-null receiver of type 'ResponseBody'.
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/util/HttpUtil.kt:298:42 Elvis operator (?:) always returns the left operand of non-nullable type 'ResponseBody'.
 
-> Task :app:compileFdroidDebugJavaWithJavac
-> Task :app:processFdroidDebugJavaRes
-> Task :app:mergeFdroidDebugJavaResource
-> Task :app:dexBuilderFdroidDebug
-> Task :app:mergeProjectDexFdroidDebug
 > Task :app:compilePlaystoreDebugJavaWithJavac
 > Task :app:processPlaystoreDebugJavaRes
 > Task :app:mergePlaystoreDebugJavaResource
 > Task :app:dexBuilderPlaystoreDebug
 > Task :app:mergeProjectDexPlaystoreDebug
-> Task :app:packageFdroidDebug
-> Task :app:createFdroidDebugApkListingFileRedirect
-> Task :app:assembleFdroidDebug
 > Task :app:packagePlaystoreDebug
 > Task :app:createPlaystoreDebugApkListingFileRedirect
 > Task :app:assemblePlaystoreDebug
@@ -51,7 +51,7 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 3m 1s
+BUILD SUCCESSFUL in 3m 2s
 82 actionable tasks: 82 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
 
@@ -68,10 +68,10 @@ Consider enabling configuration cache to speed up this build: https://docs.gradl
 > Task :app:javaPreCompilePlaystoreDebug UP-TO-DATE
 > Task :app:compilePlaystoreDebugJavaWithJavac UP-TO-DATE
 > Task :app:prePlaystoreDebugUnitTestBuild UP-TO-DATE
-> Task :app:javaPreCompilePlaystoreDebugUnitTest
 > Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
-> Task :app:bundlePlaystoreDebugClassesToRuntimeJar
+> Task :app:javaPreCompilePlaystoreDebugUnitTest
 > Task :app:bundlePlaystoreDebugClassesToCompileJar
+> Task :app:bundlePlaystoreDebugClassesToRuntimeJar
 
 > Task :app:compilePlaystoreDebugUnitTestKotlin
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/test/java/com/v2ray/ang/ui/compose/SnackbarLatestPresenterTest.kt:30:9 This declaration needs opt-in. Its usage should be marked with '@kotlinx.coroutines.ExperimentalCoroutinesApi' or '@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)'
@@ -93,6 +93,6 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 13s
+BUILD SUCCESSFUL in 12s
 28 actionable tasks: 6 executed, 22 up-to-date
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
