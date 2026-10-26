@@ -1,7 +1,7 @@
-commit: b079d397dc844e996612388ce1812cec8845a352
+commit: 435ef8ee22fb28dab234cfc3ab93d6711f2fb21c
 ref: 11/merge
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40306890242
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40307258021
 
 ## Kotlin compile errors (e: lines)
 
@@ -9,19 +9,11 @@ run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40306890242
 
 ## Test result counts
 tests="2" skipped="0" failures="0" errors="0"
-tests="20" skipped="0" failures="0" errors="0"
+tests="21" skipped="0" failures="0" errors="0"
 tests="5" skipped="0" failures="0" errors="0"
 tests="5" skipped="0" failures="0" errors="0"
 
 ## Last 40 lines of build.log
-> Task :app:mergeFdroidDebugJavaResource
-> Task :app:dexBuilderFdroidDebug
-> Task :app:mergeProjectDexFdroidDebug
-> Task :app:packageFdroidDebug
-> Task :app:createFdroidDebugApkListingFileRedirect
-> Task :app:assembleFdroidDebug
-
-> Task :app:compilePlaystoreDebugKotlin
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:501:25 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:504:43 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:505:21 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
@@ -33,11 +25,19 @@ w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/util/HttpUtil.kt:202:45 Unnecessary safe call on a non-null receiver of type 'ResponseBody'.
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/util/HttpUtil.kt:298:42 Elvis operator (?:) always returns the left operand of non-nullable type 'ResponseBody'.
 
+> Task :app:compileFdroidDebugJavaWithJavac
+> Task :app:processFdroidDebugJavaRes
+> Task :app:mergeFdroidDebugJavaResource
+> Task :app:dexBuilderFdroidDebug
+> Task :app:mergeProjectDexFdroidDebug
 > Task :app:compilePlaystoreDebugJavaWithJavac
 > Task :app:processPlaystoreDebugJavaRes
 > Task :app:mergePlaystoreDebugJavaResource
 > Task :app:dexBuilderPlaystoreDebug
 > Task :app:mergeProjectDexPlaystoreDebug
+> Task :app:packageFdroidDebug
+> Task :app:createFdroidDebugApkListingFileRedirect
+> Task :app:assembleFdroidDebug
 > Task :app:packagePlaystoreDebug
 > Task :app:createPlaystoreDebugApkListingFileRedirect
 > Task :app:assemblePlaystoreDebug
@@ -51,7 +51,7 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 3m 16s
+BUILD SUCCESSFUL in 3m 1s
 82 actionable tasks: 82 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
 
@@ -93,6 +93,6 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 11s
+BUILD SUCCESSFUL in 13s
 28 actionable tasks: 6 executed, 22 up-to-date
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
