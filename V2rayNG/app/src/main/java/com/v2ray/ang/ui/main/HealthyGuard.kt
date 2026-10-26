@@ -10,6 +10,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.time.Duration.Companion.milliseconds
 
+enum class RefreshOutcome {
+    BACKUP_FOUND,
+    NO_BACKUP,
+    FAILED_OR_CANCELLED,
+}
+
 /** What the guard needs to know about the selected server before it checks it. */
 data class GuardSelection(val guid: String, val storedMs: Long, val manual: Boolean)
 
@@ -161,12 +167,17 @@ class HealthyGuard(
         requestCheck(0L, force = false)
     }
 
-    /** Called when any Healthy refresh ends. [foundBackup] = Healthy now has a working server. */
-    fun onRefreshFinished(foundBackup: Boolean) {
-        if (foundBackup) {
-            refreshIntervalMs = cfg.autoRefreshBaseMs
-        } else if (autoRefreshPending) {
-            refreshIntervalMs = minOf(refreshIntervalMs * 2, cfg.autoRefreshMaxMs)
+    /** Only a completed empty search increases the no-backup backoff. */
+    fun onRefreshFinished(outcome: RefreshOutcome) {
+        when (outcome) {
+            RefreshOutcome.BACKUP_FOUND -> refreshIntervalMs = cfg.autoRefreshBaseMs
+            RefreshOutcome.NO_BACKUP -> if (autoRefreshPending) {
+                refreshIntervalMs = minOf(refreshIntervalMs * 2, cfg.autoRefreshMaxMs)
+            }
+            RefreshOutcome.FAILED_OR_CANCELLED -> if (autoRefreshPending) {
+                // A failed refresh is inconclusive; retry soon instead of increasing backoff.
+                lastAutoRefreshAt = ports.now - refreshIntervalMs + cfg.errorRetryMs
+            }
         }
         autoRefreshPending = false
         requestCheck(2_000L, force = true)
