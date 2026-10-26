@@ -1,7 +1,7 @@
-commit: 804863e0fb9085726f8b246c6704015cbd273eaa
+commit: 6d0092e69e66fe1b220beb659cfbba2858666b5a
 ref: work/healthy-manager-from-build-61
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40386946008
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40387054388
 
 ## Kotlin compile errors (e: lines)
 
@@ -23,13 +23,13 @@ w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/util/HttpUtil.kt:202:45 Unnecessary safe call on a non-null receiver of type 'ResponseBody'.
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/util/HttpUtil.kt:298:42 Elvis operator (?:) always returns the left operand of non-nullable type 'ResponseBody'.
 
-> Task :app:compilePlaystoreDebugJavaWithJavac
 > Task :app:compileFdroidDebugJavaWithJavac
 > Task :app:processFdroidDebugJavaRes
 > Task :app:mergeFdroidDebugJavaResource
 > Task :app:dexBuilderFdroidDebug
-> Task :app:processPlaystoreDebugJavaRes
 > Task :app:mergeProjectDexFdroidDebug
+> Task :app:compilePlaystoreDebugJavaWithJavac
+> Task :app:processPlaystoreDebugJavaRes
 > Task :app:mergePlaystoreDebugJavaResource
 > Task :app:dexBuilderPlaystoreDebug
 > Task :app:mergeProjectDexPlaystoreDebug
@@ -49,7 +49,7 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 3m 10s
+BUILD SUCCESSFUL in 2m 46s
 82 actionable tasks: 82 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
 
@@ -91,6 +91,6 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 14s
+BUILD SUCCESSFUL in 13s
 28 actionable tasks: 6 executed, 22 up-to-date
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
