@@ -1,7 +1,7 @@
-commit: 31c6f61f151972aba411f343ff4c0a370dbb7b9d
+commit: 375597576647d22e9925826aadfbda6907df4469
 ref: work/healthy-manager-from-build-61
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40411625455
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40411701597
 
 ## Kotlin compile errors (e: lines)
 
@@ -12,7 +12,7 @@ tests="18" skipped="0" failures="0" errors="0"
 tests="5" skipped="0" failures="0" errors="0"
 
 ## Last 40 lines of build.log
-w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:501:25 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
+> Task :app:compilePlaystoreDebugKotlin
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:504:43 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:505:21 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/ui/routing/RoutingSettingActivity.kt:385:43 Elvis operator (?:) always returns the left operand of non-nullable type 'Boolean'.
@@ -49,7 +49,7 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 2m 24s
+BUILD SUCCESSFUL in 2m 22s
 82 actionable tasks: 82 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
 
@@ -74,10 +74,10 @@ Consider enabling configuration cache to speed up this build: https://docs.gradl
 > Task :app:javaPreCompilePlaystoreDebug UP-TO-DATE
 > Task :app:compilePlaystoreDebugJavaWithJavac UP-TO-DATE
 > Task :app:prePlaystoreDebugUnitTestBuild UP-TO-DATE
-> Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
 > Task :app:javaPreCompilePlaystoreDebugUnitTest
-> Task :app:bundlePlaystoreDebugClassesToRuntimeJar
+> Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
 > Task :app:bundlePlaystoreDebugClassesToCompileJar
+> Task :app:bundlePlaystoreDebugClassesToRuntimeJar
 > Task :app:compilePlaystoreDebugUnitTestKotlin
 > Task :app:compilePlaystoreDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :app:processPlaystoreDebugUnitTestJavaRes
