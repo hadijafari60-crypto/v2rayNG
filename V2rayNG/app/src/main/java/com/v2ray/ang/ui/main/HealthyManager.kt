@@ -236,14 +236,19 @@ class HealthyManager(
         }
         scope.launch {
             val fastest = withContext(io) {
+                val excludedIdentity = excludeGuid?.let {
+                    dataSource.decodeServerConfig(it)?.duplicateIdentity()
+                }
                 dataSource.getSubscriptions()
                     .flatMap { dataSource.getServerGuidList(it.guid) }
                     .asSequence()
                     .distinct()
-                    .filter { it != excludeGuid }
                     .mapNotNull { guid ->
                         val profile = dataSource.decodeServerConfig(guid)
                             ?: return@mapNotNull null
+                        if (guid == excludeGuid ||
+                            (excludedIdentity != null && profile.duplicateIdentity() == excludedIdentity)
+                        ) return@mapNotNull null
                         if (profile.configType.isComplexType()) return@mapNotNull null
                         val delayMillis = dataSource.decodeAffiliationInfo(guid)?.testDelayMillis ?: 0L
                         if (delayMillis > 0L) guid to delayMillis else null
