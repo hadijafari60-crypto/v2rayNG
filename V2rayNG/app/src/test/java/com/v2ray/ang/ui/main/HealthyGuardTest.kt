@@ -28,6 +28,7 @@ class HealthyGuardTest {
         override var isRunning: Boolean = true
         override var refreshActive: Boolean = false
         override var hasBulkTest: Boolean = false
+        override var hasCurrentTest: Boolean = false
 
         var internet = true
         var downBytes = 0L

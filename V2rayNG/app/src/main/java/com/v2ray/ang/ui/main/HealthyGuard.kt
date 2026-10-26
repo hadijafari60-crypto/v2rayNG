@@ -36,6 +36,7 @@ interface GuardPorts {
     val isRunning: Boolean
     val refreshActive: Boolean
     val hasBulkTest: Boolean
+    val hasCurrentTest: Boolean
     fun hasInternet(): Boolean
     fun recentDownBytes(): Long
     fun log(message: String)
@@ -245,6 +246,10 @@ class HealthyGuard(
         }
         if (!ports.hasInternet()) {
             block("nointernet", "No internet, not switching", NEVER, say = true)
+            return
+        }
+        if (ports.hasCurrentTest) {
+            dueAt = ports.now + cfg.deferMs
             return
         }
         if (!canProceedDuringBulkTest()) {

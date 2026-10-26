@@ -140,6 +140,7 @@ class HealthyManager(
         override val isRunning: Boolean get() = host.isRunning
         override val refreshActive: Boolean get() = this@HealthyManager.refreshActive
         override val hasBulkTest: Boolean get() = host.hasBulkTest
+        override val hasCurrentTest: Boolean get() = host.hasActiveTest && !host.hasBulkTest
 
         override fun cancelBulkTest() {
             host.cancelBulkTest()
