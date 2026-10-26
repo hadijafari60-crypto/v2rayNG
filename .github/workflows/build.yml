@@ -10,8 +10,6 @@ on:
     branches:
       - master
       - work/master-baseline
-      - work/suspect-fairness
-      - work/refresh-outcome
 
 permissions:
   contents: write
