@@ -1,7 +1,7 @@
-commit: 6906f2d7641d34ee7289c32f859eb4608da3a8eb
+commit: 1909d884d6f8512bdfa4f06ad02a7d5425c7122a
 ref: work/master-baseline
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40263097445
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40264346098
 
 ## Kotlin compile errors (e: lines)
 
@@ -12,7 +12,7 @@ tests="18" skipped="0" failures="0" errors="0"
 tests="5" skipped="0" failures="0" errors="0"
 
 ## Last 40 lines of build.log
-> Task :app:compilePlaystoreDebugKotlin
+> Task :app:mergeFdroidDebugJavaResource
 > Task :app:dexBuilderFdroidDebug
 > Task :app:mergeProjectDexFdroidDebug
 
@@ -49,7 +49,7 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 2m 20s
+BUILD SUCCESSFUL in 3m 6s
 82 actionable tasks: 82 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
 
@@ -74,10 +74,10 @@ Consider enabling configuration cache to speed up this build: https://docs.gradl
 > Task :app:javaPreCompilePlaystoreDebug UP-TO-DATE
 > Task :app:compilePlaystoreDebugJavaWithJavac UP-TO-DATE
 > Task :app:prePlaystoreDebugUnitTestBuild UP-TO-DATE
-> Task :app:javaPreCompilePlaystoreDebugUnitTest
 > Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
-> Task :app:bundlePlaystoreDebugClassesToCompileJar
+> Task :app:javaPreCompilePlaystoreDebugUnitTest
 > Task :app:bundlePlaystoreDebugClassesToRuntimeJar
+> Task :app:bundlePlaystoreDebugClassesToCompileJar
 > Task :app:compilePlaystoreDebugUnitTestKotlin
 > Task :app:compilePlaystoreDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :app:processPlaystoreDebugUnitTestJavaRes
@@ -91,6 +91,6 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 9s
+BUILD SUCCESSFUL in 12s
 28 actionable tasks: 6 executed, 22 up-to-date
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
