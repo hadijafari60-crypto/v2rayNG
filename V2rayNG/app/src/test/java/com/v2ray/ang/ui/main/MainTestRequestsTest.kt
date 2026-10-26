@@ -35,7 +35,7 @@ class MainTestRequestsTest {
     }
 
     @Test
-    fun bulkCancellationAndReplacementRejectLateCompletionEvenInTheSameGroup() {
+    fun bulkCancellationAndOverlappingBulkRequestsAreRejected() {
         val requests = MainTestRequests()
         val cancelled = requests.beginBulk("group")!!
         requests.cancelBulk()
