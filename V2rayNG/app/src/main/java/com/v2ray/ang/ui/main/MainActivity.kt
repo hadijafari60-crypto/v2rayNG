@@ -140,10 +140,16 @@ class MainActivity : HelperBaseComponentActivity() {
         )
     }
 
-       private var networkCallback: ConnectivityManager.NetworkCallback? = null
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
     private var networkSeen = false
 
+    /**
+     * Connect requests can be emitted more than once during service restarts.
+     * Keep exactly one registered callback for this Activity instance.
+     */
     private fun registerNetworkWatcher() {
+        if (networkCallback != null) return
+
         try {
             val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val request = NetworkRequest.Builder()
@@ -152,7 +158,7 @@ class MainActivity : HelperBaseComponentActivity() {
                 .build()
             val callback = object : ConnectivityManager.NetworkCallback() {
                 override fun onAvailable(network: Network) {
-                    // The first callback is just the current network, not a change
+                    // The first callback is just the current network, not a change.
                     if (networkSeen) mainViewModel.onNetworkChanged() else networkSeen = true
                 }
 
@@ -167,14 +173,22 @@ class MainActivity : HelperBaseComponentActivity() {
         }
     }
 
-    override fun onDestroy() {
+    private fun unregisterNetworkWatcher() {
+        val callback = networkCallback ?: return
+        // Clear the reference first so teardown remains idempotent even if Android
+        // reports that the callback was already unregistered.
+        networkCallback = null
+        networkSeen = false
         try {
-            networkCallback?.let {
-                (getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager)
-                    .unregisterNetworkCallback(it)
-            }
-        } catch (_: Exception) {
+            val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            cm.unregisterNetworkCallback(callback)
+        } catch (e: Exception) {
+            LogUtil.e(AppConfig.TAG, "Network watcher unregister failed", e)
         }
+    }
+
+    override fun onDestroy() {
+        unregisterNetworkWatcher()
         super.onDestroy()
     }
     private fun shareToClipboard(guid: String): Boolean =
