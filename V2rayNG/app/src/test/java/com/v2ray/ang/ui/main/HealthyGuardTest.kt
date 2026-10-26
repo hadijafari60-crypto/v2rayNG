@@ -40,7 +40,7 @@ class HealthyGuardTest {
         var backupProvider: (Int) -> GuardSwitch? = { n -> GuardSwitch("B$n", "B$n", "A", "A") }
         var restartOnConnect = false
         var refreshAccepts = true
-        var refreshFindsBackup = false
+        var refreshOutcome = RefreshOutcome.NO_BACKUP
 
         var probes = 0
         var cancelledProbes = 0
@@ -106,7 +106,7 @@ class HealthyGuardTest {
             refreshStarts.add(now)
             scope.backgroundScope.launch {
                 delay(30_000)
-                guard.onRefreshFinished(refreshFindsBackup)
+                guard.onRefreshFinished(refreshOutcome)
             }
             return true
         }
@@ -234,10 +234,24 @@ class HealthyGuardTest {
     }
 
     @Test
+    fun failedAutomaticRefreshRetriesSoonWithoutIncreasingNoBackupBackoff() = runTest {
+        val (p, g) = newGuard {
+            probeAnswer = { -1L }
+            backupProvider = { null }
+            refreshOutcome = RefreshOutcome.FAILED_OR_CANCELLED
+        }
+        g.onRunning(true)
+        advance(80_000)
+        // A failed refresh is retried after the short error delay, not after a doubled no-backup interval.
+        assertTrue(p.refreshStarts.size >= 2, "refresh starts: ${p.refreshStarts}")
+        assertTrue(p.refreshStarts[1] - p.refreshStarts[0] < 60_000L)
+    }
+
+    @Test
     fun refreshThatFindsBackupResetsTheDelayAndSwitches() = runTest {
         val (p, g) = newGuard {
             probeAnswer = { -1L }
-            refreshFindsBackup = true
+            refreshOutcome = RefreshOutcome.BACKUP_FOUND
             backupProvider = { n -> if (n == 0) null else GuardSwitch("B", "B", "A", "A") }
         }
         g.onRunning(true)
@@ -293,7 +307,7 @@ class HealthyGuardTest {
         advance(60_000)
         assertEquals(0, p.probes)
         p.refreshActive = false
-        g.onRefreshFinished(true)
+        g.onRefreshFinished(RefreshOutcome.BACKUP_FOUND)
         advance(5_000)
         assertTrue(p.probes >= 1)
     }

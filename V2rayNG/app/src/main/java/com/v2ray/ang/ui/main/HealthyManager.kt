@@ -297,7 +297,7 @@ class HealthyManager(
             return false
         }
         refreshHealthyJob = scope.launch {
-            var foundBackup = false
+            var outcome = RefreshOutcome.FAILED_OR_CANCELLED
             try {
                 refreshActive = true
                 log("Refresh started (running=${host.isRunning}, auto=$auto)")
@@ -404,7 +404,7 @@ class HealthyManager(
                         .filter { it.second > 0L }
                         .minByOrNull { it.second }?.first
                 }
-                foundBackup = fastestGuid != null
+                outcome = if (fastestGuid != null) RefreshOutcome.BACKUP_FOUND else RefreshOutcome.NO_BACKUP
                 if (fastestGuid != null) {
                     val currentGuid = host.selectedGuid
                     val shouldSwitch = withContext(io) {
@@ -434,7 +434,7 @@ class HealthyManager(
                 refreshActive = false
                 lastPeriodicMs = System.currentTimeMillis() // the refresh just tested everything
                 host.copyText("Healthy log", logText()) // temporary: paste it in the chat for diagnosis
-                guard.onRefreshFinished(foundBackup)
+                guard.onRefreshFinished(outcome)
             }
         }
         return true

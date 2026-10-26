@@ -10,7 +10,7 @@ on:
     branches:
       - master
       - work/master-baseline
-      - work/network-state-penalty
+      - work/refresh-outcome
 
 permissions:
   contents: write
