@@ -147,8 +147,8 @@ class MainViewModel(
             override fun isBulkTest(requestId: String): Boolean =
                 testRequests.bulk?.id == requestId
 
-            override fun beginBulkTest(groupId: String): String =
-                testRequests.beginBulk(groupId).id
+            override fun beginBulkTest(groupId: String): String? =
+                testRequests.beginBulk(groupId)?.id
 
             override fun showTesting() {
                 _uiState.update { it.copy(isTesting = true, status = MainStatus.Testing) }
@@ -963,7 +963,7 @@ class MainViewModel(
                 }
             )
         }
-        val request = testRequests.beginBulk(groupId)
+        val request = testRequests.beginBulk(groupId) ?: return
         val message = TestServiceMessage(
             key = AppConfig.MSG_MEASURE_CONFIG_START,
             subscriptionId = groupId,
