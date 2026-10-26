@@ -37,12 +37,11 @@ class MainTestRequestsTest {
     @Test
     fun bulkCancellationAndReplacementRejectLateCompletionEvenInTheSameGroup() {
         val requests = MainTestRequests()
-        val cancelled = requests.beginBulk("group")
+        val cancelled = requests.beginBulk("group")!!
         requests.cancelBulk()
         assertNull(requests.completeBulk(cancelled.id))
-        val replaced = requests.beginBulk("group")
-        val current = requests.beginBulk("group")
-        assertNull(requests.completeBulk(replaced.id))
+        val current = requests.beginBulk("group")!!
+        assertNull(requests.beginBulk("group"))
         assertEquals(current, requests.bulk)
         assertEquals(current, requests.completeBulk(current.id))
         assertNull(requests.completeBulk(current.id))
@@ -52,7 +51,7 @@ class MainTestRequestsTest {
     @Test
     fun currentRequestCannotStartWhileBulkTestOwnsTheService() {
         val requests = MainTestRequests()
-        val bulk = requests.beginBulk("") // All servers is a valid group ID.
+        val bulk = requests.beginBulk("")!! // All servers is a valid group ID.
         assertNull(requests.beginCurrent())
         assertEquals(bulk, requests.bulk)
         assertTrue(requests.isTesting)
