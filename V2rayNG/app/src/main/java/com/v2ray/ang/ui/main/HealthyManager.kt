@@ -81,6 +81,9 @@ class HealthyManager(
     @Volatile
     private var refreshActive = false
 
+    /** True while refresh, periodic testing, or a real-ping request owns the test flow. */
+    fun isOperationBusy(): Boolean = refreshActive || periodicRunning || host.hasBulkTest
+
     // ---------- Suspect list (servers we just left; tested first by the periodic test) ----------
     private val suspectGuids = ConcurrentHashMap<String, Long>() // guid -> time it was marked suspect
     private val suspectMs = 300_000L
@@ -214,6 +217,38 @@ class HealthyManager(
 
     fun noteConnectRequest(guid: String) {
         autoConnectGuid = guid
+    }
+
+    /**
+     * During an active test, ignore the server the user tapped and connect to the
+     * fastest server with a previously successful measured delay. This does not
+     * cancel or start any test.
+     */
+    fun connectToFastestKnown(excludeGuid: String? = null) {
+        scope.launch {
+            val fastest = withContext(io) {
+                dataSource.getSubscriptions()
+                    .flatMap { dataSource.getServerGuidList(it.guid) }
+                    .asSequence()
+                    .distinct()
+                    .filter { it != excludeGuid }
+                    .mapNotNull { guid ->
+                        val profile = dataSource.decodeServerConfig(guid)
+                            ?: return@mapNotNull null
+                        if (profile.configType.isComplexType()) return@mapNotNull null
+                        val delayMillis = dataSource.decodeAffiliationInfo(guid)?.testDelayMillis ?: 0L
+                        if (delayMillis > 0L) guid to delayMillis else null
+                    }
+                    .minByOrNull { it.second }
+                    ?.first
+            }
+            if (fastest == null) {
+                log("Test active; no previously tested fast server is available")
+                return@launch
+            }
+            log("Test active; connecting to the fastest known server")
+            host.connectToServer(fastest)
+        }
     }
 
     fun onStartSuccess() {
