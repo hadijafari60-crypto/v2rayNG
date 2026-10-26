@@ -132,6 +132,17 @@ class MainViewModel(
         _connectRequests.tryEmit(Unit)
     }
 
+    /** Server-row taps during a test are redirected to the fastest known good server. */
+    fun selectServer(guid: String) {
+        if (guid == uiState.value.selectedGuid) return
+        if (healthy.isOperationBusy()) {
+            toast(R.string.toast_test_in_progress)
+            healthy.connectToFastestKnown(excludeGuid = guid)
+            return
+        }
+        connectToServer(guid)
+    }
+
     // ---------- Healthy logic (see HealthyManager.kt) ----------
     private val healthy = HealthyManager(
         scope = viewModelScope,
@@ -1006,8 +1017,17 @@ class MainViewModel(
     }
 
     private fun startCurrentServerTest(owner: MainTestRequests.CurrentOwner) {
+        if (owner == MainTestRequests.CurrentOwner.MANUAL && healthy.isOperationBusy()) {
+            toast(R.string.toast_test_in_progress)
+            return
+        }
         if (!uiState.value.isRunning) return
-        val requestId = testRequests.beginCurrent(owner) ?: return
+        val requestId = testRequests.beginCurrent(owner) ?: run {
+            if (owner == MainTestRequests.CurrentOwner.MANUAL) {
+                toast(R.string.toast_test_in_progress)
+            }
+            return
+        }
         _uiState.update { it.copy(isTesting = true, status = MainStatus.Testing) }
         dataSource.testCurrentServerRealPing(requestId)
     }
