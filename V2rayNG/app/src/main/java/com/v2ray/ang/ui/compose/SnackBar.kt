@@ -93,20 +93,17 @@ class AppSnackbarController(
 
             hostState.currentSnackbarData?.dismiss()
 
-            launch {
-                hostState.showSnackbar(
-                    AppSnackbarVisuals(
-                        message = message.toString(),
-                        type = type,
-                        duration = if (long) SnackbarDuration.Long else SnackbarDuration.Short
-                    )
-                )
-                if (id == currentId) {
-                    currentShowTime = 0L
-                }
-            }
-
             currentShowTime = System.currentTimeMillis()
+            hostState.showSnackbar(
+                AppSnackbarVisuals(
+                    message = message.toString(),
+                    type = type,
+                    duration = if (long) SnackbarDuration.Long else SnackbarDuration.Short
+                )
+            )
+            if (id == currentId) {
+                currentShowTime = 0L
+            }
         }
     }
 }
