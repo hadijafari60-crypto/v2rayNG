@@ -1,7 +1,7 @@
-commit: 698471daf164c66ef8d77f16acdda89814e579c2
+commit: 5d75ccaecc7e55c64d4074a29d13ce969254ad30
 ref: work/master-baseline
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40254695605
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40260122270
 
 ## Kotlin compile errors (e: lines)
 
@@ -9,6 +9,7 @@ run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40254695605
 
 ## Test result counts
 tests="17" skipped="0" failures="0" errors="0"
+tests="5" skipped="0" failures="0" errors="0"
 
 ## Last 40 lines of build.log
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:501:25 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
@@ -48,7 +49,7 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 2m 10s
+BUILD SUCCESSFUL in 2m 1s
 82 actionable tasks: 82 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
 
@@ -73,10 +74,10 @@ Consider enabling configuration cache to speed up this build: https://docs.gradl
 > Task :app:javaPreCompilePlaystoreDebug UP-TO-DATE
 > Task :app:compilePlaystoreDebugJavaWithJavac UP-TO-DATE
 > Task :app:prePlaystoreDebugUnitTestBuild UP-TO-DATE
-> Task :app:javaPreCompilePlaystoreDebugUnitTest
 > Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
-> Task :app:bundlePlaystoreDebugClassesToCompileJar
+> Task :app:javaPreCompilePlaystoreDebugUnitTest
 > Task :app:bundlePlaystoreDebugClassesToRuntimeJar
+> Task :app:bundlePlaystoreDebugClassesToCompileJar
 > Task :app:compilePlaystoreDebugUnitTestKotlin
 > Task :app:compilePlaystoreDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :app:processPlaystoreDebugUnitTestJavaRes
