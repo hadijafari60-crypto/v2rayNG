@@ -1,7 +1,7 @@
-commit: 2eb702b265ccfba5670c3d6aedfe489a819bde08
+commit: 1406c27e6934094af97b4887a2ea19fb77eda7ed
 ref: work/healthy-manager-from-build-61
 job status: failure
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40386501180
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40386481890
 
 ## Kotlin compile errors (e: lines)
 e: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/ui/main/MainViewModel.kt:1021:28 Unresolved reference 'toast_test_in_progress'.
@@ -13,19 +13,19 @@ e: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/
 ## Test result counts
 
 ## Last 40 lines of build.log
-> Task :app:generateFdroidDebugGlobalSynthetics
-> Task :app:checkFdroidDebugDuplicateClasses
-> Task :app:mergeLibDexFdroidDebug
-> Task :app:desugarFdroidDebugFileDependencies
 > Task :app:mergeFdroidDebugJniLibFolders
+> Task :app:desugarFdroidDebugFileDependencies
+> Task :app:mergeFdroidDebugNativeLibs
 > Task :app:l8DexDesugarLibFdroidDebug
 > Task :app:compileFdroidDebugKotlin
 > Task :app:mergeExtDexFdroidDebug
 
-> Task :app:compileFdroidDebugKotlin FAILED
+> Task :app:compileFdroidDebugKotlin
 e: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/ui/main/MainViewModel.kt:139:28 Unresolved reference 'toast_test_in_progress'.
 e: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/ui/main/MainViewModel.kt:1021:28 Unresolved reference 'toast_test_in_progress'.
 e: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/ui/main/MainViewModel.kt:1027:32 Unresolved reference 'toast_test_in_progress'.
+
+> Task :app:compileFdroidDebugKotlin FAILED
 
 [Incubating] Problems report is available at: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/build/reports/problems/problems-report.html
 
@@ -51,7 +51,7 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD FAILED in 1m 13s
-29 actionable tasks: 29 executed
+BUILD FAILED in 1m 49s
+30 actionable tasks: 30 executed
 
 ## Last 40 lines of test.log
