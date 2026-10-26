@@ -35,6 +35,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.launch
 
 enum class ToastType {
@@ -121,8 +122,9 @@ fun AppSnackbarBridge(
 
     LaunchedEffect(controller, lifecycleOwner) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            cancelFallbackToast()
-            AppSnackbarManager.messages.collect { event ->
+            AppSnackbarManager.messages
+                .onSubscription { cancelFallbackToast() }
+                .collect { event ->
                 controller.show(
                     message = event.message,
                     type = event.type,

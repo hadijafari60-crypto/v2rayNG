@@ -1,13 +1,13 @@
 package com.v2ray.ang.ui.compose
 
-import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -40,7 +40,8 @@ class SnackbarLatestPresenterTest {
             listOf("first-start", "first-cancelled", "second-start", "second-end"),
             events
         )
-    } 
+    }
+
     @Test
     fun burstDuringCancellationCleanupSkipsSupersededRequests() = runTest {
         val presenter = SnackbarLatestPresenter(backgroundScope)
