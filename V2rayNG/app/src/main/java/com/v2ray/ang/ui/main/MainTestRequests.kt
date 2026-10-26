@@ -36,7 +36,10 @@ internal class MainTestRequests {
         currentOwner = null
     }
 
-    fun beginBulk(groupId: String): Bulk = Bulk(UUID.randomUUID().toString(), groupId).also { bulk = it }
+    fun beginBulk(groupId: String): Bulk? {
+        if (isTesting) return null
+        return Bulk(UUID.randomUUID().toString(), groupId).also { bulk = it }
+    }
 
     fun completeBulk(id: String): Bulk? {
         val request = bulk?.takeIf { it.id == id } ?: return null
