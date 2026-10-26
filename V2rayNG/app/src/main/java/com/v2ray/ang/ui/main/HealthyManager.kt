@@ -556,6 +556,29 @@ class HealthyManager(
      * - otherwise a failed server gets its old result back until it fails [failsToCondemn] times in a row.
      */
     private suspend fun applyPenaltyRule(batch: List<String>, previous: Map<String, Long>) {
+        // A failed probe is not evidence against a server when Android says the device
+        // currently has no validated internet connection (for example, captive Wi-Fi).
+        if (!host.hasInternet()) {
+            val restored = withContext(io) {
+                var changed = false
+                for (guid in batch) {
+                    val result = dataSource.decodeAffiliationInfo(guid)?.testDelayMillis ?: 0L
+                    if (result < 0L) {
+                        com.v2ray.ang.handler.MmkvManager.encodeServerTestDelayMillis(
+                            guid,
+                            previous[guid] ?: 0L
+                        )
+                        changed = true
+                    }
+                }
+                changed
+            }
+            if (restored) host.reloadGroups()
+            log("Periodic test ignored: no validated internet connection; server penalties skipped")
+            say("Healthy check: internet unavailable, server penalties ignored")
+            return
+        }
+
         val outcome = withContext(io) {
             val results = batch.associateWith {
                 dataSource.decodeAffiliationInfo(it)?.testDelayMillis ?: 0L
