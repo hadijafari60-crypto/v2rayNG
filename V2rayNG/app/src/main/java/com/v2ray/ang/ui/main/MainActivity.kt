@@ -250,9 +250,8 @@ class MainActivity : HelperBaseComponentActivity() {
     }
 
     private fun handleLayoutTestClick() {
-        if (mainViewModel.uiState.value.isRunning) {
-            mainViewModel.testCurrentServerRealPing()
-        }
+        // The ViewModel reports an active test even if the VPN is currently stopped.
+        mainViewModel.testCurrentServerRealPing()
     }
 
     private fun startV2Ray() {
