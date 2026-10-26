@@ -10,6 +10,9 @@ on:
     branches:
       - master
       - work/master-baseline
+  pull_request:
+    branches:
+      - work/master-baseline
 
 permissions:
   contents: write
