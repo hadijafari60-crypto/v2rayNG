@@ -1,7 +1,7 @@
-commit: 32c4ae1a08d68ef654aaad90c33f50e5b8f5efab
+commit: 4d52ce689efcbfb2a1a08d46697854c71c1cb69b
 ref: work/healthy-manager-regression-tests
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40292166699
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40293921451
 
 ## Kotlin compile errors (e: lines)
 
@@ -14,12 +14,9 @@ tests="5" skipped="0" failures="0" errors="0"
 tests="5" skipped="0" failures="0" errors="0"
 
 ## Last 40 lines of build.log
-> Task :app:writePlaystoreDebugAppMetadata
-> Task :app:writePlaystoreDebugSigningConfigVersions
+> Task :app:compilePlaystoreDebugKotlin
+> Task :app:dexBuilderFdroidDebug
 > Task :app:mergeProjectDexFdroidDebug
-> Task :app:packageFdroidDebug
-> Task :app:createFdroidDebugApkListingFileRedirect
-> Task :app:assembleFdroidDebug
 
 > Task :app:compilePlaystoreDebugKotlin
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:501:25 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
@@ -38,6 +35,9 @@ w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/
 > Task :app:mergePlaystoreDebugJavaResource
 > Task :app:dexBuilderPlaystoreDebug
 > Task :app:mergeProjectDexPlaystoreDebug
+> Task :app:packageFdroidDebug
+> Task :app:createFdroidDebugApkListingFileRedirect
+> Task :app:assembleFdroidDebug
 > Task :app:packagePlaystoreDebug
 > Task :app:createPlaystoreDebugApkListingFileRedirect
 > Task :app:assemblePlaystoreDebug
@@ -51,7 +51,7 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 3m 10s
+BUILD SUCCESSFUL in 2m 46s
 82 actionable tasks: 82 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
 
@@ -73,10 +73,10 @@ Consider enabling configuration cache to speed up this build: https://docs.gradl
 > Task :app:javaPreCompilePlaystoreDebug UP-TO-DATE
 > Task :app:compilePlaystoreDebugJavaWithJavac UP-TO-DATE
 > Task :app:prePlaystoreDebugUnitTestBuild UP-TO-DATE
-> Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
 > Task :app:javaPreCompilePlaystoreDebugUnitTest
-> Task :app:bundlePlaystoreDebugClassesToCompileJar
+> Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
 > Task :app:bundlePlaystoreDebugClassesToRuntimeJar
+> Task :app:bundlePlaystoreDebugClassesToCompileJar
 
 > Task :app:compilePlaystoreDebugUnitTestKotlin
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/test/java/com/v2ray/ang/ui/compose/SnackbarSerialQueueTest.kt:34:9 This declaration needs opt-in. Its usage should be marked with '@kotlinx.coroutines.ExperimentalCoroutinesApi' or '@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)'
