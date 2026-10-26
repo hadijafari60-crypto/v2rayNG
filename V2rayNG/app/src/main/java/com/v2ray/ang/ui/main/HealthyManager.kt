@@ -1,13 +1,13 @@
 package com.v2ray.ang.ui.main
 
+import android.os.SystemClock
+
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.dto.TestServiceMessage
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.extension.delay
 import com.v2ray.ang.extension.isComplexType
 import com.v2ray.ang.util.LogUtil
-import android.os.SystemClock
-
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
