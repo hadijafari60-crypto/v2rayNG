@@ -81,6 +81,9 @@ class HealthyManager(
     @Volatile
     private var refreshActive = false
 
+    @Volatile
+    private var connectionChosenDuringRefresh = false
+
     /** True while refresh, periodic testing, or a real-ping request owns the test flow. */
     fun isOperationBusy(): Boolean = refreshActive || periodicRunning || host.hasBulkTest
 
@@ -246,6 +249,12 @@ class HealthyManager(
                 log("Test active; no previously tested fast server is available")
                 return@launch
             }
+            if (refreshActive) {
+                // Keep the user's requested fallback from being replaced by a later
+                // auto-connect to the first tested server or refresh completion switch.
+                connectionChosenDuringRefresh = true
+                autoConnectOnFirstGood = false
+            }
             log("Test active; connecting to the fastest known server")
             host.connectToServer(fastest)
         }
@@ -336,6 +345,7 @@ class HealthyManager(
         refreshHealthyJob = scope.launch {
             var outcome = RefreshOutcome.FAILED_OR_CANCELLED
             try {
+                connectionChosenDuringRefresh = false
                 refreshActive = true
                 log("Refresh started (running=${host.isRunning}, auto=$auto)")
 
@@ -442,7 +452,9 @@ class HealthyManager(
                         .minByOrNull { it.second }?.first
                 }
                 outcome = if (fastestGuid != null) RefreshOutcome.BACKUP_FOUND else RefreshOutcome.NO_BACKUP
-                if (fastestGuid != null) {
+                if (fastestGuid != null && connectionChosenDuringRefresh) {
+                    log("Refresh completed; preserving the server chosen during testing")
+                } else if (fastestGuid != null) {
                     val currentGuid = host.selectedGuid
                     val shouldSwitch = withContext(io) {
                         if (!host.isRunning) return@withContext true
