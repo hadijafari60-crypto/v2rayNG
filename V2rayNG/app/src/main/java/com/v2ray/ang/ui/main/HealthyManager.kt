@@ -36,7 +36,7 @@ interface HealthyHost {
     fun connectToServer(guid: String)
     fun toast(message: String)
     fun toastFailure()
-    fun hasInternet(): Boolean
+    suspend fun hasInternet(): Boolean
 }
 
 /**

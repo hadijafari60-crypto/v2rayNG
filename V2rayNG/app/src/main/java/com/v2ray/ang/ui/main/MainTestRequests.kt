@@ -3,7 +3,7 @@ package com.v2ray.ang.ui.main
 import java.util.UUID
 
 /** Main-thread request ownership; a late reply must not complete a newer test. */
-internal class MainTestRequests {
+class MainTestRequests {
     enum class CurrentOwner { MANUAL, GUARD }
     enum class BulkOwner(val timeoutMillis: Long) {
         MANUAL(10 * 60_000L), SELECTED_SERVER(20_000L), REFRESH(5 * 60_000L), PERIODIC(60_000L),
