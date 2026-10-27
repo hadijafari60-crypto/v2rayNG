@@ -30,6 +30,7 @@ interface HealthyHost {
     fun beginBulkTest(groupId: String, owner: MainTestRequests.BulkOwner): String?
     fun cancelBulkTest(requestId: String)
     fun showTesting()
+    fun setRefreshing(refreshing: Boolean)
     fun startCurrentServerTest()
     fun cancelAllTests()
     suspend fun reloadGroups()
@@ -349,6 +350,7 @@ class HealthyManager(
             return false
         }
         refreshActive = true // reserve before the coroutine can yield to periodic testing
+        host.setRefreshing(true)
         refreshHealthyJob = scope.launch {
             var outcome = RefreshOutcome.FAILED_OR_CANCELLED
             try {
@@ -487,6 +489,7 @@ class HealthyManager(
             } finally {
                 autoConnectOnFirstGood = false
                 refreshActive = false
+                host.setRefreshing(false)
                 lastPeriodicMs = SystemClock.elapsedRealtime() // the refresh just tested everything
                 guard.onRefreshFinished(outcome)
             }

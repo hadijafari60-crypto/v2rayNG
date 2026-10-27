@@ -11,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +32,8 @@ import com.v2ray.ang.ui.compose.verticalScrollbar
 
 @Composable
 fun MainTopBar(
+    isHomeScreen: Boolean,
+    onToggleHome: () -> Unit,
     isLoading: Boolean,
     showSearch: Boolean,
     searchQuery: String,
@@ -50,7 +53,7 @@ fun MainTopBar(
     val maxMenuHeight = LocalConfiguration.current.screenHeightDp.dp - statusBarHeight - navBarHeight - 20.dp
 
     AppTopBar(
-        title = stringResource(R.string.title_server),
+        title = if (isHomeScreen) "Healthy Manager" else stringResource(R.string.title_server),
         onBackClick = {},
         isLoading = isLoading,
         isSearchActive = showSearch,
@@ -70,12 +73,15 @@ fun MainTopBar(
             }
         },
         actions = {
-            if (!showSearch) {
+            TextButton(onClick = onToggleHome) {
+                Text(if (isHomeScreen) "Servers" else "Home")
+            }
+            if (!isHomeScreen && !showSearch) {
                 IconButton(onClick = { onSearchToggle(true) }) {
                     Icon(painterResource(R.drawable.ic_search_24dp), contentDescription = stringResource(R.string.acc_search))
                 }
             }
-            Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
+            if (!isHomeScreen) Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
                 IconButton(onClick = { showImportMenu = true }) {
                     Icon(painterResource(R.drawable.ic_add_24dp), contentDescription = stringResource(R.string.acc_add))
                 }

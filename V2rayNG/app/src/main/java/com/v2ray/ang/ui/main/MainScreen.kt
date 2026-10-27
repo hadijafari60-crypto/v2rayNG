@@ -44,6 +44,7 @@ fun MainScreen(
     val groups = uiState.groups
     val isLoading by mainViewModel.isLoading.collectAsStateWithLifecycle()
     val isRunning = uiState.isRunning
+    val isHealthyRefreshing = uiState.isHealthyRefreshing
     val displayText = mainViewModel.formatStatus(uiState.status)
     val selectedGuid = uiState.selectedGuid
     val doubleColumnDisplay = uiState.doubleColumnDisplay
@@ -53,6 +54,7 @@ fun MainScreen(
     val isDarkTheme = LocalDarkTheme.current
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    var showHome by rememberSaveable { mutableStateOf(true) }
     var showSearch by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
     var showDelAllConfirm by remember { mutableStateOf(false) }
@@ -153,6 +155,15 @@ fun MainScreen(
             contentWindowInsets = ScaffoldDefaults.contentWindowInsets,
             topBar = {
                 MainTopBar(
+                    isHomeScreen = showHome,
+                    onToggleHome = {
+                        showHome = !showHome
+                        if (showHome) {
+                            searchQuery = ""
+                            showSearch = false
+                            onAction(MainAction.Search(""))
+                        }
+                    },
                     isLoading = isLoading,
                     showSearch = showSearch,
                     searchQuery = searchQuery,
@@ -185,18 +196,29 @@ fun MainScreen(
                 )
             },
             bottomBar = {
-                MainBottomBar(
-                    displayText = displayText,
-                    isRunning = isRunning,
-                    isDarkTheme = isDarkTheme,
-                    onAction = onAction
-                )
+                if (!showHome) {
+                    MainBottomBar(
+                        displayText = displayText,
+                        isRunning = isRunning,
+                        isDarkTheme = isDarkTheme,
+                        onAction = onAction
+                    )
+                }
             },
             floatingActionButton = {},
         ) { innerPadding ->
             val layoutDirection = LocalLayoutDirection.current
 
-            if (groups.isNotEmpty()) {
+            if (showHome) {
+                HomeScreen(
+                    isRunning = isRunning,
+                    isRefreshing = isHealthyRefreshing,
+                    onMainButtonClick = {
+                        onAction(if (isRunning) MainAction.ToggleService else MainAction.RefreshHealthy)
+                    },
+                    modifier = Modifier.fillMaxSize().padding(innerPadding)
+                )
+            } else if (groups.isNotEmpty()) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()

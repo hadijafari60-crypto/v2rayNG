@@ -231,6 +231,10 @@ class MainViewModel(
                 _uiState.update { it.copy(isTesting = true, status = MainStatus.Testing) }
             }
 
+            override fun setRefreshing(refreshing: Boolean) {
+                _uiState.update { it.copy(isHealthyRefreshing = refreshing) }
+            }
+
             override fun startCurrentServerTest() {
                 startCurrentServerTest(MainTestRequests.CurrentOwner.GUARD)
             }
