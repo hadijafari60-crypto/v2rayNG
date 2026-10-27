@@ -12,6 +12,7 @@ on:
       - work/master-baseline
       - work/monotonic-deadlines
       - work/healthy-manager-from-build-61
+      - work/healthy-manager-home-screen
 
 permissions:
   contents: write
