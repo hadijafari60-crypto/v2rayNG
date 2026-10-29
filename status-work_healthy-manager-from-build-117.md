@@ -1,7 +1,7 @@
-commit: 490e512e5bfabd21efa8be7a2a7f7b81e4fbb19c
+commit: 29e3aaafc833667d11744923ebfb5c6955adde1a
 ref: work/healthy-manager-from-build-117
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40961438416
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40961466788
 
 ## Kotlin compile errors (e: lines)
 
@@ -74,10 +74,10 @@ Consider enabling configuration cache to speed up this build: https://docs.gradl
 > Task :app:javaPreCompilePlaystoreDebug UP-TO-DATE
 > Task :app:compilePlaystoreDebugJavaWithJavac UP-TO-DATE
 > Task :app:prePlaystoreDebugUnitTestBuild UP-TO-DATE
-> Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
 > Task :app:javaPreCompilePlaystoreDebugUnitTest
-> Task :app:bundlePlaystoreDebugClassesToRuntimeJar
+> Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
 > Task :app:bundlePlaystoreDebugClassesToCompileJar
+> Task :app:bundlePlaystoreDebugClassesToRuntimeJar
 > Task :app:compilePlaystoreDebugUnitTestKotlin
 > Task :app:compilePlaystoreDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :app:processPlaystoreDebugUnitTestJavaRes
@@ -91,6 +91,6 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 12s
+BUILD SUCCESSFUL in 11s
 28 actionable tasks: 6 executed, 22 up-to-date
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
