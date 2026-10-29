@@ -314,7 +314,10 @@ class MainViewModel(
     init {
         collectServiceEvents()
         healthy.start()
-        viewModelScope.launch { _uiState.update { it.copy(hasInternet = hasPhysicalInternet()) } }
+        viewModelScope.launch {
+            val available = hasPhysicalInternet()
+            _uiState.update { it.copy(hasInternet = available) }
+        }
         setupGroupTab()
     }
 
