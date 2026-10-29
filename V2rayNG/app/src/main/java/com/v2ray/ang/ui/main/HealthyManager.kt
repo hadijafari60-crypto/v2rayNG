@@ -512,6 +512,7 @@ class HealthyManager(
         // Refresh clears stored results before testing. Keep a snapshot so cancellation does not
         // turn untested servers into "unknown/zero" or leave partial results as a false final state.
         var previousResults: Map<String, Long> = emptyMap()
+        var testCompletedSuccessfully = false
         suspend fun restorePreviousResults() {
             withContext(io) {
                 previousResults.forEach { (guid, delayMillis) ->
@@ -547,6 +548,7 @@ class HealthyManager(
                 restorePreviousResults()
                 return false
             }
+            testCompletedSuccessfully = true
             delay(500)
             if (host.wasBulkTestCancelled(requestId)) {
                 restorePreviousResults()
@@ -555,9 +557,11 @@ class HealthyManager(
             return true
         } catch (cancelled: CancellationException) {
             if (host.isBulkTest(requestId)) host.cancelBulkTest(requestId)
-            withContext(NonCancellable + io) {
-                previousResults.forEach { (guid, delayMillis) ->
-                    com.v2ray.ang.handler.MmkvManager.encodeServerTestDelayMillis(guid, delayMillis)
+            if (!testCompletedSuccessfully) {
+                withContext(NonCancellable + io) {
+                    previousResults.forEach { (guid, delayMillis) ->
+                        com.v2ray.ang.handler.MmkvManager.encodeServerTestDelayMillis(guid, delayMillis)
+                    }
                 }
             }
             throw cancelled
