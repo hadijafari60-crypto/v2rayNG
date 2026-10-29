@@ -363,12 +363,12 @@ class HealthyManager(
         refreshActive = true // reserve before the coroutine can yield to periodic testing
         host.setRefreshing(true)
         refreshHealthyJob = scope.launch {
-            if (!host.hasInternet()) {
-                say("Internet connection is unavailable. Restore internet and try again.")
-                return@launch
-            }
             var outcome = RefreshOutcome.FAILED_OR_CANCELLED
             try {
+                if (!host.hasInternet()) {
+                    say("Internet connection is unavailable. Restore internet and try again.")
+                    return@launch
+                }
                 connectionChosenDuringRefresh = false
                 log("Refresh started (running=${host.isRunning}, auto=$auto)")
 
