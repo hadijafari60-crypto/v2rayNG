@@ -346,7 +346,8 @@
     <string name="toast_invalid_update_interval">Invalid update interval. Minimum is 15 minutes.</string>
     <string name="title_sub_update">Update subscription</string>
     <string name="title_ping_all_server">Test TCP delays (TCPing)</string>
-    <string name="title_real_ping_all_server">Test real delays</string>
+    <string name="title_real_ping_all_server">REAL TEST</string>
+    <string name="title_stop_real_ping_all_server">STOP TEST</string>
     <string name="title_user_asset_setting">Asset files</string>
     <string name="title_sort_by_test_results">Sort by test results</string>
     <string name="title_filter_config">Filter configs</string>

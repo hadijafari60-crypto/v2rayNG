@@ -166,6 +166,7 @@ fun MainScreen(
                     },
                     isLoading = isLoading,
                     isRefreshing = isHealthyRefreshing,
+                    isRealTestRunning = uiState.isRealTestRunning,
                     showSearch = showSearch,
                     searchQuery = searchQuery,
                     onSearchQueryChange = { query: String ->

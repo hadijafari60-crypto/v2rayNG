@@ -36,6 +36,7 @@ fun MainTopBar(
     onToggleHome: () -> Unit,
     isLoading: Boolean,
     isRefreshing: Boolean,
+    isRealTestRunning: Boolean,
     showSearch: Boolean,
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
@@ -123,7 +124,7 @@ fun MainTopBar(
                             onAction(MainAction.RefreshHealthy)
                         }
                     )
-                    MoreMenuContent { action ->
+                    MoreMenuContent(realTestRunning = isRealTestRunning) { action ->
                         showMenu = false
                         onMoreMenuAction(action)
                     }

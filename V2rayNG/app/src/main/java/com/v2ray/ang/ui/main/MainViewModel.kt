@@ -501,7 +501,7 @@ class MainViewModel(
             MainAction.Initialize -> initialize()
             MainAction.RefreshGroups -> setupGroupTab(forceRefresh = true)
             MainAction.TestAllServers -> testAllRealPing(true)
-            MainAction.TestRealAllServers -> testAllRealPing()
+            MainAction.TestRealAllServers -> toggleRealTest()
             MainAction.CancelTesting -> cancelAllPing()
             MainAction.RemoveAllServers -> removeAllServerAsync()
             MainAction.RemoveDuplicateServers -> removeDuplicateServerAsync()
@@ -509,7 +509,15 @@ class MainViewModel(
             MainAction.SortByTestResults -> sortByTestResultsAsync()
             MainAction.UpdateSubscriptions -> importConfigViaSub(uiState.value.selectedGroupId)
             is MainAction.UpdateGroupSubscription -> importConfigViaSub(action.groupId)
-            MainAction.RefreshHealthy -> healthy.refresh()
+            MainAction.RefreshHealthy -> {
+                // Stop only the manual Real Test before handing the test flow to Healthy.
+                if (uiState.value.isRealTestRunning) {
+                    testRequests.bulk
+                        ?.takeIf { it.owner == MainTestRequests.BulkOwner.MANUAL }
+                        ?.let { cancelBulkTest(it.id) }
+                }
+                healthy.refresh()
+            }
             MainAction.ExportAll -> exportAllAsync()
             is MainAction.SelectGroup -> subscriptionIdChanged(action.groupId)
             is MainAction.SelectServer -> updateSelectedGuid(action.guid)
@@ -1101,9 +1109,21 @@ class MainViewModel(
         _uiState.update {
             it.copy(
                 isTesting = testRequests.isTesting,
+                isRealTestRunning = false,
                 status = if (testRequests.isTesting) MainStatus.Testing
                 else if (it.isRunning) MainStatus.Connected else MainStatus.Disconnected
             )
+        }
+    }
+
+    private fun toggleRealTest() {
+        val activeManualRealTest = testRequests.bulk?.takeIf {
+            it.owner == MainTestRequests.BulkOwner.MANUAL && uiState.value.isRealTestRunning
+        }
+        if (activeManualRealTest != null) {
+            cancelBulkTest(activeManualRealTest.id)
+        } else {
+            testAllRealPing()
         }
     }
 
@@ -1143,6 +1163,7 @@ class MainViewModel(
         _uiState.update {
             it.copy(
                 isTesting = true,
+                isRealTestRunning = !onlyTcp,
                 status = MainStatus.Testing
             )
         }

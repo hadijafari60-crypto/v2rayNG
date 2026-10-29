@@ -66,9 +66,15 @@ fun ImportMenuContent(onAction: (MainAction) -> Unit) = AppDropdownMenuItems(
 )
 
 @Composable
-fun MoreMenuContent(onSelected: (MainMoreMenuAction) -> Unit) = AppDropdownMenuItems(
+fun MoreMenuContent(
+    realTestRunning: Boolean = false,
+    onSelected: (MainMoreMenuAction) -> Unit,
+) = AppDropdownMenuItems(
     items = MainMoreMenuAction.entries,
-    labelRes = { it.labelRes },
+    labelRes = {
+        if (it == MainMoreMenuAction.TestAllRealPing && realTestRunning) R.string.title_stop_real_ping_all_server
+        else it.labelRes
+    },
     onSelected = onSelected
 )
 

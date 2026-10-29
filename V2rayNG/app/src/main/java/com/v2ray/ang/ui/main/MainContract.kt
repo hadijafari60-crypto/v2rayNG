@@ -22,6 +22,7 @@ data class MainUiState(
     val selectedGuid: String? = null,
     val isRunning: Boolean = false,
     val isTesting: Boolean = false,
+    val isRealTestRunning: Boolean = false,
     val isHealthyRefreshing: Boolean = false,
     val hasInternet: Boolean = true,
     val status: MainStatus = MainStatus.Disconnected,
