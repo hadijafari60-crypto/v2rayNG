@@ -511,11 +511,7 @@ class HealthyManager(
         val requestId = host.beginBulkTest(groupId, MainTestRequests.BulkOwner.REFRESH) ?: return false
         // Refresh clears stored results before testing. Keep a snapshot so cancellation does not
         // turn untested servers into "unknown/zero" or leave partial results as a false final state.
-        val previousResults = withContext(io) {
-            guids.associateWith { guid ->
-                dataSource.decodeAffiliationInfo(guid)?.testDelayMillis ?: 0L
-            }
-        }
+        var previousResults: Map<String, Long> = emptyMap()
         suspend fun restorePreviousResults() {
             withContext(io) {
                 previousResults.forEach { (guid, delayMillis) ->
@@ -524,6 +520,11 @@ class HealthyManager(
             }
         }
         try {
+            previousResults = withContext(io) {
+                guids.associateWith { guid ->
+                    dataSource.decodeAffiliationInfo(guid)?.testDelayMillis ?: 0L
+                }
+            }
             host.showTesting()
             // Clear only after this refresh owns a real request.
             withContext(io) { dataSource.clearAllTestDelayResults(guids) }
