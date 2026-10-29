@@ -35,6 +35,7 @@ fun MainTopBar(
     isHomeScreen: Boolean,
     onToggleHome: () -> Unit,
     isLoading: Boolean,
+    isRefreshing: Boolean,
     showSearch: Boolean,
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
@@ -116,7 +117,7 @@ fun MainTopBar(
                         .verticalScrollbar(moreMenuScrollState)
                 ) {
                    DropdownMenuItem(
-                        text = { Text("Refresh Healthy") },
+                        text = { Text(if (isRefreshing) "Stop Healthy refresh" else "Refresh Healthy") },
                         onClick = {
                             showMenu = false
                             onAction(MainAction.RefreshHealthy)
