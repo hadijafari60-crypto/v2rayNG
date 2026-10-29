@@ -214,6 +214,7 @@ fun MainScreen(
                 HomeScreen(
                     isRunning = isRunning,
                     isRefreshing = isHealthyRefreshing,
+                    hasInternet = uiState.hasInternet,
                     onMainButtonClick = {
                         if (isRunning) {
                             // Stop the VPN, and cancel Healthy only if this cycle still has
