@@ -226,6 +226,10 @@ class HealthyManager(
      */
     fun connectToFastestKnown(excludeGuid: String? = null) {
         scope.launch {
+            if (!host.hasInternet()) {
+                say("Internet connection is unavailable. Restore internet and try again.")
+                return@launch
+            }
             val fastest = withContext(io) {
                 val excludedIdentity = excludeGuid?.let {
                     dataSource.decodeServerConfig(it)?.duplicateIdentity()
@@ -359,6 +363,10 @@ class HealthyManager(
         refreshActive = true // reserve before the coroutine can yield to periodic testing
         host.setRefreshing(true)
         refreshHealthyJob = scope.launch {
+            if (!host.hasInternet()) {
+                say("Internet connection is unavailable. Restore internet and try again.")
+                return@launch
+            }
             var outcome = RefreshOutcome.FAILED_OR_CANCELLED
             try {
                 connectionChosenDuringRefresh = false
