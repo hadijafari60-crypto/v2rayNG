@@ -216,10 +216,10 @@ fun MainScreen(
                     isRefreshing = isHealthyRefreshing,
                     onMainButtonClick = {
                         if (isRunning) {
-                            // The main button is the single stop control: stop the VPN and
-                            // cancel any Healthy refresh owned by this connection cycle.
+                            // Stop the VPN, and cancel Healthy only if this cycle still has
+                            // an active refresh. Never start a new refresh while disconnecting.
                             onAction(MainAction.ToggleService)
-                            onAction(MainAction.RefreshHealthy)
+                            if (isRefreshing) onAction(MainAction.RefreshHealthy)
                         } else {
                             // RefreshHealthy toggles: start a new cycle, or cancel the
                             // in-progress cycle when the user taps CONNECTING.
