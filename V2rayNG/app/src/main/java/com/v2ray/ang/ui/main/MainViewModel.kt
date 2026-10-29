@@ -265,50 +265,56 @@ class MainViewModel(
                 this@MainViewModel.toastError(R.string.toast_failure)
             }
 
-            // True when any real (non-VPN) network with internet capability exists
-            @Suppress("DEPRECATION")
-            override suspend fun hasInternet(): Boolean = withContext(ioDispatcher) {
-                try {
-                    val cm = appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-                    val physicalNetworks = cm.allNetworks.mapNotNull { network ->
-                        val caps = cm.getNetworkCapabilities(network) ?: return@mapNotNull null
-                        if (!caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) ||
-                            caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
-                        ) return@mapNotNull null
-                        network to caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-                    }
-                    if (physicalNetworks.any { it.second }) return@withContext true
-                    // VALIDATED can be false even when TCP connectivity works; check only this ambiguous case.
-                    val targets = listOf("1.1.1.1" to 443, "8.8.8.8" to 443)
-                    for ((network, _) in physicalNetworks) for ((address, port) in targets) {
-                        val reachable = try {
-                            network.socketFactory.createSocket().use { socket ->
-                                socket.connect(InetSocketAddress(address, port), INTERNET_PROBE_TIMEOUT_MS)
-                            }
-                            true
-                        } catch (_: Exception) { false }
-                        if (reachable) return@withContext true
-                    }
-                    false
-                } catch (cancelled: CancellationException) {
-                    throw cancelled
-                } catch (e: Exception) {
-                    false
-                }
-            }
+            override suspend fun hasInternet(): Boolean = hasPhysicalInternet()
 
         }
     )
 
+    // Check the non-VPN network separately from VPN service state for truthful home-screen status.
+    @Suppress("DEPRECATION")
+    private suspend fun hasPhysicalInternet(): Boolean = withContext(ioDispatcher) {
+        try {
+            val cm = appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val physicalNetworks = cm.allNetworks.mapNotNull { network ->
+                val caps = cm.getNetworkCapabilities(network) ?: return@mapNotNull null
+                if (!caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) ||
+                    caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
+                ) return@mapNotNull null
+                network to caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+            }
+            if (physicalNetworks.any { it.second }) return@withContext true
+            val targets = listOf("1.1.1.1" to 443, "8.8.8.8" to 443)
+            for ((network, _) in physicalNetworks) for ((address, port) in targets) {
+                val reachable = try {
+                    network.socketFactory.createSocket().use { socket ->
+                        socket.connect(InetSocketAddress(address, port), INTERNET_PROBE_TIMEOUT_MS)
+                    }
+                    true
+                } catch (_: Exception) { false }
+                if (reachable) return@withContext true
+            }
+            false
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            false
+        }
+    }
+
     // Called by the Activity when the underlying network changes (Wi-Fi <-> mobile, lost, back)
     fun onNetworkChanged() {
         healthy.onNetworkChanged()
+        viewModelScope.launch {
+            val available = hasPhysicalInternet()
+            _uiState.update { it.copy(hasInternet = available) }
+        }
     }
 
     // ---------- Service events ----------
     init {
         collectServiceEvents()
         healthy.start()
+        viewModelScope.launch { _uiState.update { it.copy(hasInternet = hasPhysicalInternet()) } }
         setupGroupTab()
     }
 
