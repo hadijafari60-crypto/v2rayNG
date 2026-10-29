@@ -28,12 +28,15 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.v2ray.ang.dto.TrafficStatsUiState
+import com.v2ray.ang.extension.toSpeedString
 
 @Composable
 fun HomeScreen(
     isRunning: Boolean,
     isRefreshing: Boolean,
     hasInternet: Boolean,
+    trafficStats: TrafficStatsUiState,
     onMainButtonClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -193,5 +196,91 @@ fun HomeScreen(
                 )
             }
         }
+
+        if (isRunning && trafficStats.isActive) {
+            Spacer(Modifier.size(14.dp))
+            TrafficStatsCard(trafficStats)
+        }
     }
+}
+
+@Composable
+private fun TrafficStatsCard(stats: TrafficStatsUiState) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
+        ),
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = "SERVER TRAFFIC",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.Bold,
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                TrafficMetric(
+                    title = "UPLOAD SPEED",
+                    value = stats.uploadBytesPerSecond.toSpeedString(),
+                    modifier = Modifier.weight(1f),
+                )
+                TrafficMetric(
+                    title = "DOWNLOAD SPEED",
+                    value = stats.downloadBytesPerSecond.toSpeedString(),
+                    modifier = Modifier.weight(1f),
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                TrafficMetric(
+                    title = "UPLOADED",
+                    value = formatTrafficBytes(stats.uploadedBytes),
+                    modifier = Modifier.weight(1f),
+                )
+                TrafficMetric(
+                    title = "DOWNLOADED",
+                    value = formatTrafficBytes(stats.downloadedBytes),
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TrafficMetric(title: String, value: String, modifier: Modifier = Modifier) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+    }
+}
+
+private fun formatTrafficBytes(bytes: Long): String {
+    if (bytes < 1024L) return "$bytes B"
+    val units = arrayOf("KB", "MB", "GB", "TB")
+    var value = bytes.toDouble()
+    var unit = -1
+    do {
+        value /= 1024.0
+        unit++
+    } while (value >= 1024.0 && unit < units.lastIndex)
+    return String.format(java.util.Locale.ROOT, "%.1f %s", value, units[unit])
 }
