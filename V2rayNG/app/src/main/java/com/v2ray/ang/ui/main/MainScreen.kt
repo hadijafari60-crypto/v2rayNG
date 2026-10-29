@@ -165,6 +165,7 @@ fun MainScreen(
                         }
                     },
                     isLoading = isLoading,
+                    isRefreshing = isHealthyRefreshing,
                     showSearch = showSearch,
                     searchQuery = searchQuery,
                     onSearchQueryChange = { query: String ->
