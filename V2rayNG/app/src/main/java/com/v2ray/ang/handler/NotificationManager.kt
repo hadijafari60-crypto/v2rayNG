@@ -13,6 +13,7 @@ import androidx.core.app.NotificationCompat
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.core.CoreServiceManager
+import com.v2ray.ang.dto.TrafficStatsUiState
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.extension.delay
 import com.v2ray.ang.extension.toSpeedString
@@ -23,6 +24,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.math.min
 
@@ -38,14 +43,18 @@ object NotificationManager {
     private var speedNotificationJob: Job? = null
     private var mNotificationManager: NotificationManager? = null
 
+    private val _trafficStats = MutableStateFlow(TrafficStatsUiState())
+    /** Shared snapshot so the home screen never consumes the core's resettable counters itself. */
+    val trafficStats: StateFlow<TrafficStatsUiState> = _trafficStats.asStateFlow()
+
     /**
      * Starts the speed notification.
      * @param currentConfig The current profile configuration.
      */
     fun startSpeedNotification() {
-        if (MmkvManager.decodeSettingsBool(AppConfig.PREF_SPEED_ENABLED) != true) return
         if (speedNotificationJob != null || CoreServiceManager.isRunning() == false) return
 
+        _trafficStats.update { it.copy(uploadBytesPerSecond = 0, downloadBytesPerSecond = 0, isActive = true) }
         var lastZeroSpeed = false
 
         speedNotificationJob = CoroutineScope(Dispatchers.IO).launch {
@@ -136,6 +145,7 @@ object NotificationManager {
         speedNotificationJob?.cancel()
         speedNotificationJob = null
         mNotificationManager = null
+        _trafficStats.value = TrafficStatsUiState()
     }
 
     /**
@@ -145,6 +155,7 @@ object NotificationManager {
         speedNotificationJob?.let {
             it.cancel()
             speedNotificationJob = null
+            _trafficStats.update { it.copy(uploadBytesPerSecond = 0, downloadBytesPerSecond = 0) }
             updateNotification("", 0, 0)
         }
     }
@@ -265,7 +276,15 @@ object NotificationManager {
         val proxyTotal = proxyUplink + proxyDownlink
         val directTotal = directUplink + directDownlink
         val zeroSpeed = proxyTotal + directTotal == 0L
-        if (!zeroSpeed || !lastZeroSpeed) {
+        val previousStats = _trafficStats.value
+        _trafficStats.value = previousStats.copy(
+            uploadBytesPerSecond = (proxyUplink / sinceLastQueryInSeconds).toLong(),
+            downloadBytesPerSecond = (proxyDownlink / sinceLastQueryInSeconds).toLong(),
+            uploadedBytes = previousStats.uploadedBytes + proxyUplink,
+            downloadedBytes = previousStats.downloadedBytes + proxyDownlink,
+            isActive = true,
+        )
+        if (MmkvManager.decodeSettingsBool(AppConfig.PREF_SPEED_ENABLED) == true && (!zeroSpeed || !lastZeroSpeed)) {
             val text = StringBuilder()
             appendSpeedString(
                 text, AppConfig.TAG_PROXY,
