@@ -81,7 +81,6 @@ fun HomeScreen(
                     .clip(CircleShape)
                     .background(buttonColor)
                     .clickable(
-                        enabled = !waitingForConnection,
                         onClick = onMainButtonClick,
                     )
                     .semantics { contentDescription = buttonLabel },
