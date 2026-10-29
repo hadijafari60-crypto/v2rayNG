@@ -12,6 +12,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentHashMap
@@ -553,9 +554,11 @@ class HealthyManager(
             return true
         } catch (cancelled: CancellationException) {
             if (host.isBulkTest(requestId)) host.cancelBulkTest(requestId)
-            withContext(Dispatchers.IO) { previousResults.forEach { (guid, delayMillis) ->
-                com.v2ray.ang.handler.MmkvManager.encodeServerTestDelayMillis(guid, delayMillis)
-            } }
+            withContext(NonCancellable + io) {
+                previousResults.forEach { (guid, delayMillis) ->
+                    com.v2ray.ang.handler.MmkvManager.encodeServerTestDelayMillis(guid, delayMillis)
+                }
+            }
             throw cancelled
         } catch (e: Exception) {
             if (host.isBulkTest(requestId)) host.cancelBulkTest(requestId)
