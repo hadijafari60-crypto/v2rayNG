@@ -200,15 +200,16 @@ fun HomeScreen(
             }
         }
 
-        if (isRunning && trafficStats.isActive) {
-            Spacer(Modifier.size(14.dp))
-            TrafficStatsCard(trafficStats)
-        }
+        Spacer(Modifier.size(14.dp))
+        TrafficStatsCard(
+            stats = trafficStats,
+            isConnected = isRunning && trafficStats.isActive,
+        )
     }
 }
 
 @Composable
-private fun TrafficStatsCard(stats: TrafficStatsUiState) {
+private fun TrafficStatsCard(stats: TrafficStatsUiState, isConnected: Boolean) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -220,12 +221,25 @@ private fun TrafficStatsCard(stats: TrafficStatsUiState) {
             modifier = Modifier.padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text(
-                text = "SERVER TRAFFIC",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontWeight = FontWeight.Bold,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "SERVER TRAFFIC",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Bold,
+                )
+                Text(
+                    text = if (isConnected) "LIVE" else "NOT CONNECTED",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (isConnected) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),

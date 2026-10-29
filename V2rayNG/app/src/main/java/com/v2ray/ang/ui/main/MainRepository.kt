@@ -11,6 +11,8 @@ import com.v2ray.ang.R
 import com.v2ray.ang.dto.ConnectionTestResult
 import com.v2ray.ang.dto.RealPingResult
 import com.v2ray.ang.dto.SubscriptionUpdateResult
+import com.v2ray.ang.dto.TrafficStatsUiState
+import com.v2ray.ang.dto.TrafficStatsUiStateStore
 import com.v2ray.ang.dto.TestServiceMessage
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.dto.entities.ServerAffiliationInfo
@@ -48,6 +50,10 @@ class MainRepository(
         override fun onReceive(context: Context?, intent: Intent?) {
             val safeIntent = intent ?: return
             val requestId = safeIntent.getStringExtra(MessageHelper.EXTRA_REQUEST_ID).orEmpty()
+            if (safeIntent.getIntExtra("key", 0) == AppConfig.MSG_TRAFFIC_STATS_UPDATE) {
+                safeIntent.serializable<TrafficStatsUiState>("content")?.let(TrafficStatsUiStateStore::update)
+                return
+            }
             val event = when (safeIntent.getIntExtra("key", 0)) {
                 AppConfig.MSG_STATE_RUNNING -> MainServiceEvent.StateRunning
                 AppConfig.MSG_STATE_NOT_RUNNING -> MainServiceEvent.StateNotRunning

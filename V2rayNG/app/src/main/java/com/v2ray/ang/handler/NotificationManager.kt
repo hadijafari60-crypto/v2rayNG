@@ -17,6 +17,7 @@ import com.v2ray.ang.dto.TrafficStatsUiState
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.extension.delay
 import com.v2ray.ang.extension.toSpeedString
+import com.v2ray.ang.helper.MessageHelper
 import com.v2ray.ang.helper.NotificationHelper
 import com.v2ray.ang.ui.main.MainActivity
 import com.v2ray.ang.util.LogUtil
@@ -55,6 +56,7 @@ object NotificationManager {
         if (speedNotificationJob != null || CoreServiceManager.isRunning() == false) return
 
         _trafficStats.update { it.copy(uploadBytesPerSecond = 0, downloadBytesPerSecond = 0, isActive = true) }
+        publishTrafficStats()
         var lastZeroSpeed = false
 
         speedNotificationJob = CoroutineScope(Dispatchers.IO).launch {
@@ -146,6 +148,7 @@ object NotificationManager {
         speedNotificationJob = null
         mNotificationManager = null
         _trafficStats.value = TrafficStatsUiState()
+        MessageHelper.sendMsg2UI(service, AppConfig.MSG_TRAFFIC_STATS_UPDATE, _trafficStats.value)
     }
 
     /**
@@ -156,6 +159,7 @@ object NotificationManager {
             it.cancel()
             speedNotificationJob = null
             _trafficStats.update { it.copy(uploadBytesPerSecond = 0, downloadBytesPerSecond = 0) }
+            publishTrafficStats()
             if (MmkvManager.decodeSettingsBool(AppConfig.PREF_SPEED_ENABLED) == true) {
                 updateNotification("", 0, 0)
             }
@@ -286,6 +290,7 @@ object NotificationManager {
             downloadedBytes = previousStats.downloadedBytes + proxyDownlink,
             isActive = true,
         )
+        publishTrafficStats()
         if (MmkvManager.decodeSettingsBool(AppConfig.PREF_SPEED_ENABLED) == true && (!zeroSpeed || !lastZeroSpeed)) {
             val text = StringBuilder()
             appendSpeedString(
@@ -303,6 +308,14 @@ object NotificationManager {
         }
         lastQueryTime = queryTime
         return zeroSpeed
+    }
+
+    /**
+     * Publishes the latest daemon-process snapshot to the UI process.
+     */
+    private fun publishTrafficStats() {
+        val service = getService() ?: return
+        MessageHelper.sendMsg2UI(service, AppConfig.MSG_TRAFFIC_STATS_UPDATE, _trafficStats.value)
     }
 
     /**
