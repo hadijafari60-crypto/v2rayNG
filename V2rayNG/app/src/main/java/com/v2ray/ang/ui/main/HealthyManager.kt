@@ -334,7 +334,13 @@ class HealthyManager(
     // Healthy pool refresh
     // =====================================================================
 
+    /** A second manual refresh tap cancels the active refresh and its owned bulk test. */
     fun refresh() {
+        if (refreshActive || refreshHealthyJob?.isActive == true) {
+            log("Manual request: cancelling Healthy refresh")
+            refreshHealthyJob?.cancel()
+            return
+        }
         startRefresh(auto = false)
     }
 
@@ -490,6 +496,7 @@ class HealthyManager(
                 autoConnectOnFirstGood = false
                 refreshActive = false
                 host.setRefreshing(false)
+                refreshHealthyJob = null
                 lastPeriodicMs = SystemClock.elapsedRealtime() // the refresh just tested everything
                 guard.onRefreshFinished(outcome)
             }
