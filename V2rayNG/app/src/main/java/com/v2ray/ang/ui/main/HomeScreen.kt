@@ -37,8 +37,8 @@ fun HomeScreen(
     onMainButtonClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val waitingForConnection = isRefreshing && !isRunning
-    val internetLost = isRunning && !hasInternet
+    val waitingForConnection = isRefreshing && !isRunning && hasInternet
+    val internetLost = !hasInternet
     val buttonLabel = when {
         internetLost -> "NO INTERNET"
         isRunning -> "CONNECTED"
@@ -46,13 +46,15 @@ fun HomeScreen(
         else -> "CONNECT"
     }
     val headline = when {
-        internetLost -> "Internet connection lost"
+        internetLost && isRunning -> "Internet connection lost"
+        internetLost -> "No internet connection"
         isRunning -> "You’re protected"
         waitingForConnection -> "Preparing your connection"
         else -> "Ready to connect"
     }
     val statusText = when {
-        internetLost -> "Your VPN is still active, but your device has no internet access. Restore internet, or disconnect the VPN."
+        internetLost && isRunning -> "Your VPN is still active, but your device has no internet access. Restore internet, or disconnect the VPN."
+        internetLost -> "Your device has no internet access. Restore internet before connecting."
         isRunning -> "Your VPN connection is active. Tap the button whenever you want to disconnect."
         waitingForConnection -> "Checking healthy servers and selecting a fast connection…"
         else -> "Healthy Manager will look for a responsive server and connect automatically."
