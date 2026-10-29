@@ -156,7 +156,9 @@ object NotificationManager {
             it.cancel()
             speedNotificationJob = null
             _trafficStats.update { it.copy(uploadBytesPerSecond = 0, downloadBytesPerSecond = 0) }
-            updateNotification("", 0, 0)
+            if (MmkvManager.decodeSettingsBool(AppConfig.PREF_SPEED_ENABLED) == true) {
+                updateNotification("", 0, 0)
+            }
         }
     }
 
