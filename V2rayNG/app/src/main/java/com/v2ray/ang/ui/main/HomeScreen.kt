@@ -27,29 +27,33 @@ import androidx.compose.ui.unit.dp
 fun HomeScreen(
     isRunning: Boolean,
     isRefreshing: Boolean,
+    hasInternet: Boolean,
     onMainButtonClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val waitingForConnection = isRefreshing && !isRunning
+    val internetLost = isRunning && !hasInternet
     val buttonLabel = when {
+        internetLost -> "NO INTERNET"
         isRunning -> "CONNECTED"
         waitingForConnection -> "CONNECTING"
         else -> "CONNECT"
     }
     val statusText = when {
+        internetLost -> "Internet connection is unavailable. Tests are paused. Tap to disconnect the VPN."
         isRunning -> "VPN is connected. Tap the button to disconnect."
         waitingForConnection -> "Finding and connecting to the fastest healthy server…"
         else -> "Tap to find and connect to a healthy server."
     }
-    val buttonColor = if (isRunning) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.secondaryContainer
+    val buttonColor = when {
+        internetLost -> MaterialTheme.colorScheme.errorContainer
+        isRunning -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.secondaryContainer
     }
-    val buttonTextColor = if (isRunning) {
-        MaterialTheme.colorScheme.onPrimary
-    } else {
-        MaterialTheme.colorScheme.onSecondaryContainer
+    val buttonTextColor = when {
+        internetLost -> MaterialTheme.colorScheme.onErrorContainer
+        isRunning -> MaterialTheme.colorScheme.onPrimary
+        else -> MaterialTheme.colorScheme.onSecondaryContainer
     }
 
     Column(
@@ -61,6 +65,7 @@ fun HomeScreen(
     ) {
         Text(
             text = when {
+                internetLost -> "Internet connection lost"
                 isRunning -> "You’re protected"
                 waitingForConnection -> "Preparing your connection"
                 else -> "Ready to connect"
