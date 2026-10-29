@@ -1,7 +1,7 @@
-commit: 4b3c01ef063f0237108d5c821e19a9b40ab9ce63
+commit: 490e512e5bfabd21efa8be7a2a7f7b81e4fbb19c
 ref: work/healthy-manager-from-build-117
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40961416565
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40961438416
 
 ## Kotlin compile errors (e: lines)
 
@@ -12,6 +12,11 @@ tests="19" skipped="0" failures="0" errors="0"
 tests="7" skipped="0" failures="0" errors="0"
 
 ## Last 40 lines of build.log
+> Task :app:mergeFdroidDebugJavaResource
+> Task :app:dexBuilderFdroidDebug
+> Task :app:mergeProjectDexFdroidDebug
+
+> Task :app:compilePlaystoreDebugKotlin
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:501:25 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:504:43 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:505:21 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
@@ -24,12 +29,7 @@ w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/util/HttpUtil.kt:298:42 Elvis operator (?:) always returns the left operand of non-nullable type 'ResponseBody'.
 
 > Task :app:compilePlaystoreDebugJavaWithJavac
-> Task :app:compileFdroidDebugJavaWithJavac
-> Task :app:processFdroidDebugJavaRes
-> Task :app:mergeFdroidDebugJavaResource
-> Task :app:dexBuilderFdroidDebug
 > Task :app:processPlaystoreDebugJavaRes
-> Task :app:mergeProjectDexFdroidDebug
 > Task :app:mergePlaystoreDebugJavaResource
 > Task :app:dexBuilderPlaystoreDebug
 > Task :app:mergeProjectDexPlaystoreDebug
@@ -49,7 +49,7 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 2m 59s
+BUILD SUCCESSFUL in 3m 4s
 82 actionable tasks: 82 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
 
