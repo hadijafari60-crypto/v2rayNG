@@ -23,6 +23,7 @@ data class MainUiState(
     val isRunning: Boolean = false,
     val isTesting: Boolean = false,
     val isHealthyRefreshing: Boolean = false,
+    val hasInternet: Boolean = true,
     val status: MainStatus = MainStatus.Disconnected,
     val locateTarget: LocateTarget? = null,
     val confirmRemove: Boolean = false,
