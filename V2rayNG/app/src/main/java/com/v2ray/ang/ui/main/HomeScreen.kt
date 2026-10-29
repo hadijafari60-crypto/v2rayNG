@@ -5,13 +5,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -39,11 +45,17 @@ fun HomeScreen(
         waitingForConnection -> "CONNECTING"
         else -> "CONNECT"
     }
+    val headline = when {
+        internetLost -> "Internet connection lost"
+        isRunning -> "You’re protected"
+        waitingForConnection -> "Preparing your connection"
+        else -> "Ready to connect"
+    }
     val statusText = when {
-        internetLost -> "Internet connection is unavailable. Tests are paused. Tap to disconnect the VPN."
-        isRunning -> "VPN is connected. Tap the button to disconnect."
-        waitingForConnection -> "Finding and connecting to the fastest healthy server…"
-        else -> "Tap to find and connect to a healthy server."
+        internetLost -> "Your VPN is still active, but your device has no internet access. Restore internet, or disconnect the VPN."
+        isRunning -> "Your VPN connection is active. Tap the button whenever you want to disconnect."
+        waitingForConnection -> "Checking healthy servers and selecting a fast connection…"
+        else -> "Healthy Manager will look for a responsive server and connect automatically."
     }
     val buttonColor = when {
         internetLost -> MaterialTheme.colorScheme.errorContainer
@@ -55,26 +67,47 @@ fun HomeScreen(
         isRunning -> MaterialTheme.colorScheme.onPrimary
         else -> MaterialTheme.colorScheme.onSecondaryContainer
     }
+    val statusLabel = when {
+        internetLost -> "INTERNET UNAVAILABLE"
+        isRunning -> "VPN CONNECTED"
+        waitingForConnection -> "SEARCHING FOR A SERVER"
+        else -> "READY"
+    }
+    val statusColor = when {
+        internetLost -> MaterialTheme.colorScheme.error
+        isRunning -> MaterialTheme.colorScheme.primary
+        waitingForConnection -> MaterialTheme.colorScheme.tertiary
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp, vertical = 20.dp),
+            .padding(horizontal = 24.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
-            text = when {
-                internetLost -> "Internet connection lost"
-                isRunning -> "You’re protected"
-                waitingForConnection -> "Preparing your connection"
-                else -> "Ready to connect"
-            },
+            text = "HEALTHY MANAGER",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold,
+        )
+        Spacer(Modifier.size(10.dp))
+        Text(
+            text = headline,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
         )
-        Spacer(Modifier.size(32.dp))
+        Spacer(Modifier.size(8.dp))
+        Text(
+            text = "A faster connection, chosen automatically",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.size(28.dp))
 
         Box(
             modifier = Modifier.size(236.dp),
@@ -85,18 +118,26 @@ fun HomeScreen(
                     .size(204.dp)
                     .clip(CircleShape)
                     .background(buttonColor)
-                    .clickable(
-                        onClick = onMainButtonClick,
-                    )
+                    .clickable(onClick = onMainButtonClick)
                     .semantics { contentDescription = buttonLabel },
                 contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    text = buttonLabel,
-                    color = buttonTextColor,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = buttonLabel,
+                        color = buttonTextColor,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    if (isRunning && !internetLost) {
+                        Spacer(Modifier.size(4.dp))
+                        Text(
+                            text = "Tap to disconnect",
+                            color = buttonTextColor,
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    }
+                }
             }
             if (waitingForConnection) {
                 CircularProgressIndicator(
@@ -107,12 +148,48 @@ fun HomeScreen(
             }
         }
 
-        Spacer(Modifier.size(28.dp))
-        Text(
-            text = statusText,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
+        Spacer(Modifier.size(24.dp))
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
+            ),
+        ) {
+            Column(
+                modifier = Modifier.padding(18.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = "CONNECTION STATUS",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Surface(
+                        color = statusColor.copy(alpha = 0.12f),
+                        shape = RoundedCornerShape(50),
+                    ) {
+                        Text(
+                            text = statusLabel,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = statusColor,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
+                Text(
+                    text = statusText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }
