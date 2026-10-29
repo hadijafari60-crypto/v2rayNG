@@ -508,11 +508,28 @@ class HealthyManager(
         val guids = withContext(io) { dataSource.getServerGuidList(groupId) }
         if (guids.isEmpty()) return true
         val requestId = host.beginBulkTest(groupId, MainTestRequests.BulkOwner.REFRESH) ?: return false
+        // Refresh clears stored results before testing. Keep a snapshot so cancellation does not
+        // turn untested servers into "unknown/zero" or leave partial results as a false final state.
+        val previousResults = withContext(io) {
+            guids.associateWith { guid ->
+                dataSource.decodeAffiliationInfo(guid)?.testDelayMillis ?: 0L
+            }
+        }
+        suspend fun restorePreviousResults() {
+            withContext(io) {
+                previousResults.forEach { (guid, delayMillis) ->
+                    com.v2ray.ang.handler.MmkvManager.encodeServerTestDelayMillis(guid, delayMillis)
+                }
+            }
+        }
         try {
             host.showTesting()
             // Clear only after this refresh owns a real request.
             withContext(io) { dataSource.clearAllTestDelayResults(guids) }
-            if (!host.isBulkTest(requestId)) return !host.wasBulkTestCancelled(requestId)
+            if (!host.isBulkTest(requestId)) {
+                if (host.wasBulkTestCancelled(requestId)) restorePreviousResults()
+                return !host.wasBulkTestCancelled(requestId)
+            }
             dataSource.sendMsg2TestService(TestServiceMessage(key = AppConfig.MSG_MEASURE_CONFIG_START,
                 subscriptionId = groupId, serverGuids = emptyList(), onlyTcp = false), requestId)
             var waited = 0
@@ -520,16 +537,25 @@ class HealthyManager(
             if (host.isBulkTest(requestId)) {
                 log("Refresh test timed out for group $groupId; cancelling only its request")
                 host.cancelBulkTest(requestId)
+                restorePreviousResults()
                 return false
             }
             if (host.wasBulkTestCancelled(requestId)) {
-                log("Refresh test cancelled for group $groupId; aborting refresh")
+                log("Refresh test cancelled for group $groupId; restoring previous results")
+                restorePreviousResults()
                 return false
             }
             delay(500)
-            return !host.wasBulkTestCancelled(requestId)
+            if (host.wasBulkTestCancelled(requestId)) {
+                restorePreviousResults()
+                return false
+            }
+            return true
         } catch (cancelled: CancellationException) {
             if (host.isBulkTest(requestId)) host.cancelBulkTest(requestId)
+            withContext(Dispatchers.IO) { previousResults.forEach { (guid, delayMillis) ->
+                com.v2ray.ang.handler.MmkvManager.encodeServerTestDelayMillis(guid, delayMillis)
+            } }
             throw cancelled
         } catch (e: Exception) {
             if (host.isBulkTest(requestId)) host.cancelBulkTest(requestId)
