@@ -174,22 +174,30 @@ fun HomeScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Bold,
                         )
-                        Text(
-                            text = selectedServer?.profile?.remarks?.ifBlank { "Server not selected" }
-                                ?: "Server not selected",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            maxLines = 1,
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = selectedServer?.profile?.remarks?.ifBlank { "Server not selected" }
+                                    ?: "Server not selected",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                maxLines = 1,
+                                modifier = Modifier.weight(1f),
+                            )
+                            Spacer(Modifier.size(12.dp))
+                            Text(
+                                text = selectedServer?.testDelayMillis
+                                    ?.takeIf { it > 0L }
+                                    ?.let { "$it ms" } ?: "— ms",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
                     }
-                    Text(
-                        text = selectedServer?.testDelayMillis
-                            ?.takeIf { it > 0L }
-                            ?.let { "$it ms" } ?: "— ms",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold,
-                    )
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
