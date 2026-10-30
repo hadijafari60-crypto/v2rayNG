@@ -394,7 +394,6 @@ fun HomeScreen(
 }
 
 @Composable
-@Composable
 private fun PowerGlyph() {
     Canvas(modifier = Modifier.size(72.dp)) {
         val stroke = 6.dp.toPx()
@@ -417,6 +416,7 @@ private fun PowerGlyph() {
     }
 }
 
+@Composable
 private fun HomeDivider() {
     Box(
         Modifier
