@@ -29,7 +29,6 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.v2ray.ang.dto.entities.ProfileItem
-import com.v2ray.ang.dto.entities.ServersCache
 import com.v2ray.ang.dto.TrafficStatsUiStateStore
 import com.v2ray.ang.ui.compose.LocalDarkTheme
 import com.v2ray.ang.ui.compose.QRCodeDialog
@@ -50,8 +49,6 @@ fun MainScreen(
     val isHealthyRefreshing = uiState.isHealthyRefreshing
     val displayText = mainViewModel.formatStatus(uiState.status)
     val selectedGuid = uiState.selectedGuid
-    val healthyGroupId = groups.firstOrNull { it.remarks == "Healthy" }?.id.orEmpty()
-    val homeServers by mainViewModel.serversForGroup(healthyGroupId).collectAsStateWithLifecycle()
     val doubleColumnDisplay = uiState.doubleColumnDisplay
     val confirmRemove = uiState.confirmRemove
     val shareQRCodeBitmap = uiState.shareQRCodeBitmap
@@ -222,9 +219,6 @@ fun MainScreen(
                     isRefreshing = isHealthyRefreshing,
                     hasInternet = uiState.hasInternet,
                     trafficStats = trafficStats,
-                    servers = homeServers,
-                    selectedGuid = selectedGuid,
-                    onSelectServer = { guid -> mainViewModel.selectServer(guid) },
                     onMainButtonClick = {
                         if (isRunning) {
                             // Stop the VPN, and cancel Healthy only if this cycle still has
