@@ -1,7 +1,7 @@
-commit: f1e6f66e854b9efa1c9433a199acd0a7c1a2c52d
+commit: 09b127f3667a57626a0bf171d54a7dd09bdca920
 ref: work/home-screen-redesign-2026-10-30
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/41097934528
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/41098008442
 
 ## Kotlin compile errors (e: lines)
 
@@ -16,6 +16,9 @@ tests="2" skipped="0" failures="0" errors="0"
 > Task :app:mergeFdroidDebugJavaResource
 > Task :app:dexBuilderFdroidDebug
 > Task :app:mergeProjectDexFdroidDebug
+> Task :app:packageFdroidDebug
+> Task :app:createFdroidDebugApkListingFileRedirect
+> Task :app:assembleFdroidDebug
 
 > Task :app:compilePlaystoreDebugKotlin
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:501:25 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
@@ -34,9 +37,6 @@ w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/
 > Task :app:mergePlaystoreDebugJavaResource
 > Task :app:dexBuilderPlaystoreDebug
 > Task :app:mergeProjectDexPlaystoreDebug
-> Task :app:packageFdroidDebug
-> Task :app:createFdroidDebugApkListingFileRedirect
-> Task :app:assembleFdroidDebug
 > Task :app:packagePlaystoreDebug
 > Task :app:createPlaystoreDebugApkListingFileRedirect
 > Task :app:assemblePlaystoreDebug
@@ -50,7 +50,7 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 3m 21s
+BUILD SUCCESSFUL in 3m 11s
 82 actionable tasks: 82 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
 
@@ -75,8 +75,8 @@ Consider enabling configuration cache to speed up this build: https://docs.gradl
 > Task :app:javaPreCompilePlaystoreDebug UP-TO-DATE
 > Task :app:compilePlaystoreDebugJavaWithJavac UP-TO-DATE
 > Task :app:prePlaystoreDebugUnitTestBuild UP-TO-DATE
-> Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
 > Task :app:javaPreCompilePlaystoreDebugUnitTest
+> Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
 > Task :app:bundlePlaystoreDebugClassesToRuntimeJar
 > Task :app:bundlePlaystoreDebugClassesToCompileJar
 > Task :app:compilePlaystoreDebugUnitTestKotlin
