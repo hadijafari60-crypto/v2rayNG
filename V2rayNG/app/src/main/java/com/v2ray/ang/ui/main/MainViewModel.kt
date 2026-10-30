@@ -48,7 +48,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.PatternSyntaxException
 
 private fun applyTestDelayResults(
@@ -266,7 +265,9 @@ class MainViewModel(
                 this@MainViewModel.toastError(R.string.toast_failure)
             }
 
-            override suspend fun hasInternet(): Boolean = hasPhysicalInternet()
+            // Healthy checks and the home-screen indicator must publish through the same
+            // generation gate so a refresh-detected outage is reflected by the button.
+            override suspend fun hasInternet(): Boolean = checkPhysicalInternetAndUpdateUi()
 
         }
     )
@@ -302,18 +303,22 @@ class MainViewModel(
         }
     }
 
-    // Only the newest connectivity probe may publish its result. Network callbacks can
-    // arrive in quick succession (for example Wi-Fi loss followed by mobile availability),
-    // and an older, slower probe must not overwrite the newer network state.
-    private val networkCheckGeneration = AtomicLong(0L)
+    // All callers (initialization, network callbacks and Healthy checks) publish through
+    // one generation gate. A slower, older probe cannot overwrite a newer result.
+    private val networkStatusCheckGate = NetworkStatusCheckGate()
+
+    private suspend fun checkPhysicalInternetAndUpdateUi(): Boolean {
+        val checkId = networkStatusCheckGate.beginCheck()
+        val available = hasPhysicalInternet()
+        if (networkStatusCheckGate.isLatest(checkId)) {
+            _uiState.update { it.copy(hasInternet = available) }
+        }
+        return available
+    }
 
     private fun refreshPhysicalInternetStatus() {
-        val generation = networkCheckGeneration.incrementAndGet()
         viewModelScope.launch {
-            val available = hasPhysicalInternet()
-            if (generation == networkCheckGeneration.get()) {
-                _uiState.update { it.copy(hasInternet = available) }
-            }
+            checkPhysicalInternetAndUpdateUi()
         }
     }
 

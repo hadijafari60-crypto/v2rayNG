@@ -111,7 +111,7 @@ jobs:
       shell: bash
       run: |
         cd ${{ github.workspace }}/V2rayNG
-        ./gradlew testPlaystoreDebugUnitTest --tests "com.v2ray.ang.ui.main.HealthyGuardTest" --tests "com.v2ray.ang.ui.main.MainTestRequestsTest" 2>&1 | tee ${{ github.workspace }}/test.log
+        ./gradlew testPlaystoreDebugUnitTest --tests "com.v2ray.ang.ui.main.HealthyGuardTest" --tests "com.v2ray.ang.ui.main.MainTestRequestsTest" --tests "com.v2ray.ang.ui.main.NetworkStatusCheckGateTest" 2>&1 | tee ${{ github.workspace }}/test.log
 
     - name: Publish build status
       if: always()
