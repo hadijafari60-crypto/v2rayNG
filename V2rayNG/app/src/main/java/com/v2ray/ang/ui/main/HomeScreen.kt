@@ -12,16 +12,23 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.v2ray.ang.dto.TrafficStatsUiState
+import com.v2ray.ang.dto.entities.ServersCache
 import com.v2ray.ang.extension.toSpeedString
 
 @Composable
@@ -39,7 +47,10 @@ fun HomeScreen(
     isRefreshing: Boolean,
     hasInternet: Boolean,
     trafficStats: TrafficStatsUiState,
+    servers: List<ServersCache>,
+    selectedGuid: String?,
     onMainButtonClick: () -> Unit,
+    onSelectServer: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val waitingForConnection = isRefreshing && !isRunning && hasInternet
@@ -57,13 +68,6 @@ fun HomeScreen(
         waitingForConnection -> "Preparing your connection"
         else -> "Ready to connect"
     }
-    val statusText = when {
-        internetLost && isRunning -> "Your VPN is still active, but your device has no internet access. Restore internet, or disconnect the VPN."
-        internetLost -> "Your device has no internet access. Restore internet before connecting."
-        isRunning -> "Your VPN connection is active. Tap the button whenever you want to disconnect."
-        waitingForConnection -> "Checking healthy servers and selecting a fast connection…"
-        else -> "Healthy Manager will look for a responsive server and connect automatically."
-    }
     val buttonColor = when {
         internetLost -> MaterialTheme.colorScheme.errorContainer
         isRunning -> MaterialTheme.colorScheme.primary
@@ -74,24 +78,14 @@ fun HomeScreen(
         isRunning -> MaterialTheme.colorScheme.onPrimary
         else -> MaterialTheme.colorScheme.onSecondaryContainer
     }
-    val statusLabel = when {
-        internetLost -> "INTERNET UNAVAILABLE"
-        isRunning -> "VPN CONNECTED"
-        waitingForConnection -> "SEARCHING FOR A SERVER"
-        else -> "READY"
-    }
-    val statusColor = when {
-        internetLost -> MaterialTheme.colorScheme.error
-        isRunning -> MaterialTheme.colorScheme.primary
-        waitingForConnection -> MaterialTheme.colorScheme.tertiary
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
+    val selectedServer = servers.firstOrNull { it.guid == selectedGuid }
+    var showServerPicker by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 24.dp),
+            .padding(horizontal = 24.dp, vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -101,21 +95,21 @@ fun HomeScreen(
             color = MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.Bold,
         )
-        Spacer(Modifier.size(10.dp))
+        Spacer(Modifier.size(8.dp))
         Text(
             text = headline,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
         )
-        Spacer(Modifier.size(8.dp))
+        Spacer(Modifier.size(6.dp))
         Text(
             text = "A faster connection, chosen automatically",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
-        Spacer(Modifier.size(28.dp))
+        Spacer(Modifier.size(24.dp))
 
         Box(
             modifier = Modifier.size(236.dp),
@@ -156,7 +150,7 @@ fun HomeScreen(
             }
         }
 
-        Spacer(Modifier.size(24.dp))
+        Spacer(Modifier.size(22.dp))
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
@@ -166,121 +160,155 @@ fun HomeScreen(
         ) {
             Column(
                 modifier = Modifier.padding(18.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(
-                        text = "CONNECTION STATUS",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Surface(
-                        color = statusColor.copy(alpha = 0.12f),
-                        shape = RoundedCornerShape(50),
-                    ) {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = statusLabel,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = statusColor,
+                            text = "CURRENT SERVER",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Bold,
                         )
+                        Text(
+                            text = selectedServer?.profile?.remarks?.ifBlank { "Server not selected" }
+                                ?: "Server not selected",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                        )
                     }
+                    Text(
+                        text = selectedServer?.testDelayMillis
+                            ?.takeIf { it > 0L }
+                            ?.let { "$it ms" } ?: "— ms",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                    )
                 }
-                Text(
-                    text = statusText,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    TrafficMetric(
+                        title = "↑ UPLOAD SPEED",
+                        value = trafficStats.uploadBytesPerSecond.toSpeedString(),
+                        accent = MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.weight(1f),
+                    )
+                    TrafficMetric(
+                        title = "↓ DOWNLOAD SPEED",
+                        value = trafficStats.downloadBytesPerSecond.toSpeedString(),
+                        accent = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    TrafficMetric(
+                        title = "↑ UPLOADED",
+                        value = formatTrafficBytes(trafficStats.uploadedBytes),
+                        accent = MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.weight(1f),
+                    )
+                    TrafficMetric(
+                        title = "↓ DOWNLOADED",
+                        value = formatTrafficBytes(trafficStats.downloadedBytes),
+                        accent = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                OutlinedButton(
+                    onClick = { showServerPicker = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                ) {
+                    Text("CHANGE SERVER")
+                }
             }
         }
+    }
 
-        Spacer(Modifier.size(14.dp))
-        TrafficStatsCard(
-            stats = trafficStats,
-            isConnected = isRunning && trafficStats.isActive,
+    if (showServerPicker) {
+        val topServers = remember(servers) {
+            servers.asSequence()
+                .filter { it.testDelayMillis > 0L }
+                .sortedBy { it.testDelayMillis }
+                .take(5)
+                .toList()
+        }
+        AlertDialog(
+            onDismissRequest = { showServerPicker = false },
+            title = { Text("Choose a server") },
+            text = {
+                if (topServers.isEmpty()) {
+                    Text("No tested servers are available yet. Start a connection test first.")
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        topServers.forEachIndexed { index, server ->
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .clickable {
+                                        showServerPicker = false
+                                        onSelectServer(server.guid)
+                                    },
+                                color = if (server.guid == selectedGuid) {
+                                    MaterialTheme.colorScheme.primaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.surface
+                                },
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Text(
+                                        text = "${index + 1}. ${server.profile.remarks.ifBlank { "Server" }}",
+                                        modifier = Modifier.weight(1f),
+                                        maxLines = 1,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                    )
+                                    Text(
+                                        text = "${server.testDelayMillis} ms",
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.SemiBold,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showServerPicker = false }) { Text("CLOSE") }
+            },
         )
     }
 }
 
 @Composable
-private fun TrafficStatsCard(stats: TrafficStatsUiState, isConnected: Boolean) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
-        ),
-    ) {
-        Column(
-            modifier = Modifier.padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "SERVER TRAFFIC",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    text = if (isConnected) "LIVE" else "NOT CONNECTED",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = if (isConnected) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                TrafficMetric(
-                    title = "UPLOAD SPEED",
-                    value = stats.uploadBytesPerSecond.toSpeedString(),
-                    modifier = Modifier.weight(1f),
-                )
-                TrafficMetric(
-                    title = "DOWNLOAD SPEED",
-                    value = stats.downloadBytesPerSecond.toSpeedString(),
-                    modifier = Modifier.weight(1f),
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                TrafficMetric(
-                    title = "UPLOADED",
-                    value = formatTrafficBytes(stats.uploadedBytes),
-                    modifier = Modifier.weight(1f),
-                )
-                TrafficMetric(
-                    title = "DOWNLOADED",
-                    value = formatTrafficBytes(stats.downloadedBytes),
-                    modifier = Modifier.weight(1f),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun TrafficMetric(title: String, value: String, modifier: Modifier = Modifier) {
+private fun TrafficMetric(
+    title: String,
+    value: String,
+    accent: androidx.compose.ui.graphics.Color,
+    modifier: Modifier = Modifier,
+) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
             text = title,
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = accent,
+            fontWeight = FontWeight.Bold,
         )
         Text(
             text = value,
