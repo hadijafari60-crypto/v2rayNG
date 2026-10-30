@@ -1,5 +1,6 @@
 package com.v2ray.ang.ui.main
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -9,8 +10,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,14 +34,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.v2ray.ang.dto.TrafficStatsUiState
 import com.v2ray.ang.dto.entities.ServersCache
 import com.v2ray.ang.extension.toSpeedString
+
+private val HomeBackground = Color(0xFF050A12)
+private val HomeBlue = Color(0xFF087BA8)
+private val HomeBlueLight = Color(0xFFD9F0FF)
+private val HomeText = Color(0xFF102033)
+private val HomeMuted = Color(0xFF7189A5)
+private val HomeGreen = Color(0xFF0BA878)
 
 @Composable
 fun HomeScreen(
@@ -67,129 +81,191 @@ fun HomeScreen(
         waitingForConnection -> "Preparing your connection"
         else -> "Ready to connect"
     }
-    val buttonColor = when {
-        internetLost -> MaterialTheme.colorScheme.errorContainer
-        isRunning -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.secondaryContainer
-    }
-    val buttonTextColor = when {
-        internetLost -> MaterialTheme.colorScheme.onErrorContainer
-        isRunning -> MaterialTheme.colorScheme.onPrimary
-        else -> MaterialTheme.colorScheme.onSecondaryContainer
-    }
     val selectedServer = servers.firstOrNull { it.guid == selectedGuid }
+    val rankedServers = remember(servers) {
+        servers.asSequence()
+            .filter { it.testDelayMillis > 0L }
+            .sortedBy { it.testDelayMillis }
+            .toList()
+    }
+    val selectedRank = rankedServers.indexOfFirst { it.guid == selectedGuid }
+        .takeIf { it >= 0 }?.plus(1)
     var showServerPicker by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
             .fillMaxSize()
+            .background(HomeBackground)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 20.dp),
+            .padding(horizontal = 22.dp, vertical = 18.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
-            text = "HEALTHY MANAGER",
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.Bold,
-        )
-        Spacer(Modifier.size(8.dp))
-        Text(
             text = headline,
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.headlineMedium,
+            color = Color(0xFFF4F8FF),
+            fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
         )
-        Spacer(Modifier.size(6.dp))
-        Text(
-            text = "A faster connection, chosen automatically",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
-        Spacer(Modifier.size(24.dp))
+        Spacer(Modifier.height(18.dp))
 
+        // Layered translucent rings recreate the soft illuminated power control.
         Box(
-            modifier = Modifier.size(236.dp),
+            modifier = Modifier
+                .size(278.dp)
+                .semantics { contentDescription = buttonLabel },
             contentAlignment = Alignment.Center,
         ) {
             Box(
-                modifier = Modifier
-                    .size(204.dp)
+                Modifier
+                    .size(278.dp)
                     .clip(CircleShape)
-                    .background(buttonColor)
-                    .clickable(onClick = onMainButtonClick)
-                    .semantics { contentDescription = buttonLabel },
+                    .background(Color(0x1A42BFFF))
+            )
+            Box(
+                Modifier
+                    .size(252.dp)
+                    .clip(CircleShape)
+                    .background(Color(0x3342BFFF))
+            )
+            Box(
+                Modifier
+                    .size(224.dp)
+                    .shadow(34.dp, CircleShape, clip = false)
+                    .clip(CircleShape)
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(Color(0xFF1689B8), Color(0xFF00516F))
+                        )
+                    )
+                    .clickable(onClick = onMainButtonClick),
                 contentAlignment = Alignment.Center,
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
+                        text = "⏻",
+                        color = Color.White,
+                        fontSize = 76.sp,
+                        lineHeight = 82.sp,
+                        fontWeight = FontWeight.Light,
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
                         text = buttonLabel,
-                        color = buttonTextColor,
+                        color = Color.White,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp,
                     )
-                    if (isRunning && !internetLost) {
-                        Spacer(Modifier.size(4.dp))
-                        Text(
-                            text = "Tap to disconnect",
-                            color = buttonTextColor,
-                            style = MaterialTheme.typography.labelMedium,
-                        )
-                    }
                 }
             }
             if (waitingForConnection) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(232.dp),
-                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(270.dp),
+                    color = Color(0xFF79D8FF),
                     strokeWidth = 3.dp,
                 )
             }
         }
+        if (isRunning && !internetLost) {
+            Spacer(Modifier.height(2.dp))
+            Surface(
+                color = Color(0xFFEAF5FF),
+                shape = RoundedCornerShape(30.dp),
+                shadowElevation = 8.dp,
+            ) {
+                Text(
+                    text = "Tap to disconnect",
+                    modifier = Modifier.padding(horizontal = 22.dp, vertical = 8.dp),
+                    color = HomeMuted,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+        } else {
+            Spacer(Modifier.height(18.dp))
+        }
 
-        Spacer(Modifier.size(22.dp))
+        Spacer(Modifier.height(28.dp))
         Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
-            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(22.dp, RoundedCornerShape(30.dp), clip = false),
+            shape = RoundedCornerShape(30.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+            border = BorderStroke(1.dp, Color(0xFFD9E9F7)),
         ) {
             Column(
-                modifier = Modifier.padding(18.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(Color(0xFFF9FCFF), Color(0xFFEAF4FC))
+                        )
+                    )
+                    .padding(horizontal = 22.dp, vertical = 22.dp),
+                verticalArrangement = Arrangement.spacedBy(18.dp),
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    Box(
+                        modifier = Modifier
+                            .size(66.dp)
+                            .clip(RoundedCornerShape(22.dp))
+                            .background(Color(0xFFDCEEFF)),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text("▤", color = HomeBlue, fontSize = 38.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Spacer(Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "CURRENT SERVER",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            "Current Server",
+                            color = HomeMuted,
+                            style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                         )
+                        Spacer(Modifier.height(3.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = selectedServer?.profile?.remarks?.ifBlank { "Server not selected" }
+                                    ?: "Server not selected",
+                                color = HomeText,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                            )
+                            if (selectedRank != null) {
+                                Spacer(Modifier.width(8.dp))
+                                Surface(
+                                    color = Color(0xFFC9F7E8),
+                                    shape = CircleShape,
+                                ) {
+                                    Text(
+                                        "#$selectedRank",
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                        color = HomeGreen,
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.labelLarge,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text("▮▮▮", color = HomeGreen, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         Text(
-                            text = selectedServer?.profile?.remarks?.ifBlank { "Server not selected" }
-                                ?: "Server not selected",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            maxLines = 1,
+                            selectedServer?.testDelayMillis?.takeIf { it > 0L }?.let { "$it ms" } ?: "— ms",
+                            color = HomeGreen,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
                         )
                     }
-                    Text(
-                        text = selectedServer?.testDelayMillis
-                            ?.takeIf { it > 0L }
-                            ?.let { "$it ms" } ?: "— ms",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold,
-                    )
                 }
+
+                HomeDivider()
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -197,14 +273,20 @@ fun HomeScreen(
                     TrafficMetric(
                         title = "UPLOAD SPEED",
                         value = trafficStats.uploadBytesPerSecond.toSpeedString(),
+                        symbol = "↑",
+                        symbolColor = HomeBlue,
                         modifier = Modifier.weight(1f),
                     )
+                    MetricDivider()
                     TrafficMetric(
                         title = "DOWNLOAD SPEED",
                         value = trafficStats.downloadBytesPerSecond.toSpeedString(),
+                        symbol = "↓",
+                        symbolColor = HomeGreen,
                         modifier = Modifier.weight(1f),
                     )
                 }
+                HomeDivider()
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -212,32 +294,52 @@ fun HomeScreen(
                     TrafficMetric(
                         title = "UPLOADED",
                         value = formatTrafficBytes(trafficStats.uploadedBytes),
+                        symbol = "⇧",
+                        symbolColor = Color(0xFF635BDB),
                         modifier = Modifier.weight(1f),
                     )
+                    MetricDivider()
                     TrafficMetric(
                         title = "DOWNLOADED",
                         value = formatTrafficBytes(trafficStats.downloadedBytes),
+                        symbol = "⇩",
+                        symbolColor = HomeGreen,
                         modifier = Modifier.weight(1f),
                     )
                 }
-                TextButton(
-                    onClick = { showServerPicker = true },
-                    modifier = Modifier.fillMaxWidth(),
+
+                Spacer(Modifier.height(2.dp))
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showServerPicker = true },
+                    shape = RoundedCornerShape(22.dp),
+                    color = Color(0xFFD9EDFF),
                 ) {
-                    Text("CHANGE SERVER")
+                    Row(
+                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 17.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        Text("⇄", color = HomeBlue, fontSize = 27.sp, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.width(14.dp))
+                        Text(
+                            "Change Server",
+                            color = HomeBlue,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Text("›", color = HomeBlue, fontSize = 34.sp, lineHeight = 34.sp)
+                    }
                 }
             }
         }
+        Spacer(Modifier.height(18.dp))
     }
 
     if (showServerPicker) {
-        val topServers = remember(servers) {
-            servers.asSequence()
-                .filter { it.testDelayMillis > 0L }
-                .sortedBy { it.testDelayMillis }
-                .take(5)
-                .toList()
-        }
+        val topServers = rankedServers.take(5)
         AlertDialog(
             onDismissRequest = { showServerPicker = false },
             title = { Text("Choose a server") },
@@ -291,18 +393,65 @@ fun HomeScreen(
 }
 
 @Composable
-private fun TrafficMetric(title: String, value: String, modifier: Modifier = Modifier) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-        )
+private fun HomeDivider() {
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .height(1.dp)
+            .background(Color(0xFFD7E7F5))
+    )
+}
+
+@Composable
+private fun MetricDivider() {
+    Box(
+        Modifier
+            .width(1.dp)
+            .height(76.dp)
+            .background(Color(0xFFD5E6F4))
+    )
+}
+
+@Composable
+private fun TrafficMetric(
+    title: String,
+    value: String,
+    symbol: String,
+    symbolColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(symbolColor.copy(alpha = 0.13f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(symbol, color = symbolColor, fontSize = 27.sp, fontWeight = FontWeight.Bold)
+        }
+        Spacer(Modifier.width(10.dp))
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                text = title,
+                color = HomeMuted,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                text = value,
+                color = HomeText,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+            )
+        }
     }
 }
 
