@@ -48,6 +48,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.PatternSyntaxException
 
 private fun applyTestDelayResults(
@@ -301,23 +302,32 @@ class MainViewModel(
         }
     }
 
+    // Only the newest connectivity probe may publish its result. Network callbacks can
+    // arrive in quick succession (for example Wi-Fi loss followed by mobile availability),
+    // and an older, slower probe must not overwrite the newer network state.
+    private val networkCheckGeneration = AtomicLong(0L)
+
+    private fun refreshPhysicalInternetStatus() {
+        val generation = networkCheckGeneration.incrementAndGet()
+        viewModelScope.launch {
+            val available = hasPhysicalInternet()
+            if (generation == networkCheckGeneration.get()) {
+                _uiState.update { it.copy(hasInternet = available) }
+            }
+        }
+    }
+
     // Called by the Activity when the underlying network changes (Wi-Fi <-> mobile, lost, back)
     fun onNetworkChanged() {
         healthy.onNetworkChanged()
-        viewModelScope.launch {
-            val available = hasPhysicalInternet()
-            _uiState.update { it.copy(hasInternet = available) }
-        }
+        refreshPhysicalInternetStatus()
     }
 
     // ---------- Service events ----------
     init {
         collectServiceEvents()
         healthy.start()
-        viewModelScope.launch {
-            val available = hasPhysicalInternet()
-            _uiState.update { it.copy(hasInternet = available) }
-        }
+        refreshPhysicalInternetStatus()
         setupGroupTab()
     }
 
