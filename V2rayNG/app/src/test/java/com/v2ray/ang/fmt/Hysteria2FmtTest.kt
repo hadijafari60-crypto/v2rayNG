@@ -57,6 +57,7 @@ class Hysteria2FmtTest {
     @Test
     fun explicitPortsArePreserved() {
         for (scheme in listOf("hysteria2", "hy2")) {
+            // Port range validation is separate from choosing a missing-port default.
             for (port in listOf(0, 443, 8443, 65535, 65536)) {
                 val profile = Hysteria2Fmt.parse("$scheme://test@example.com:$port/")
 
