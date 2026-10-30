@@ -1,7 +1,7 @@
-commit: 1ed973d45ff1179aa8e09eec153e358965b9d522
+commit: adbe8f5eda9b9c9ed7daf55121bac53793d0c225
 ref: work/healthy-manager-from-build-117
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40985130324
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40991476488
 
 ## Kotlin compile errors (e: lines)
 
@@ -10,6 +10,7 @@ run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/40985130324
 ## Test result counts
 tests="19" skipped="0" failures="0" errors="0"
 tests="7" skipped="0" failures="0" errors="0"
+tests="2" skipped="0" failures="0" errors="0"
 
 ## Last 40 lines of build.log
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:501:25 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
@@ -49,7 +50,7 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 3m
+BUILD SUCCESSFUL in 1m 56s
 82 actionable tasks: 82 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
 
@@ -74,10 +75,10 @@ Consider enabling configuration cache to speed up this build: https://docs.gradl
 > Task :app:javaPreCompilePlaystoreDebug UP-TO-DATE
 > Task :app:compilePlaystoreDebugJavaWithJavac UP-TO-DATE
 > Task :app:prePlaystoreDebugUnitTestBuild UP-TO-DATE
-> Task :app:javaPreCompilePlaystoreDebugUnitTest
 > Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
-> Task :app:bundlePlaystoreDebugClassesToRuntimeJar
+> Task :app:javaPreCompilePlaystoreDebugUnitTest
 > Task :app:bundlePlaystoreDebugClassesToCompileJar
+> Task :app:bundlePlaystoreDebugClassesToRuntimeJar
 > Task :app:compilePlaystoreDebugUnitTestKotlin
 > Task :app:compilePlaystoreDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :app:processPlaystoreDebugUnitTestJavaRes
@@ -91,6 +92,6 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 13s
+BUILD SUCCESSFUL in 9s
 28 actionable tasks: 6 executed, 22 up-to-date
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
