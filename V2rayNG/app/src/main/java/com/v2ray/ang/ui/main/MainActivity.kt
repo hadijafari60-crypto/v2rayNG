@@ -98,13 +98,15 @@ class MainActivity : HelperBaseComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Monitor physical connectivity for the whole screen lifetime, not only
+        // after a VPN connect request. The home status must also work before VPN starts.
+        registerNetworkWatcher()
         mainViewModel.onAction(MainAction.Initialize)
 
         checkAndRequestPermission(PermissionType.POST_NOTIFICATIONS) {}
         
         lifecycleScope.launch {
             mainViewModel.connectRequests.collect {
-                registerNetworkWatcher()
                 LauncherManager.restartServiceOrStart(
                     this@MainActivity,
                     this@MainActivity::requestServiceStart
