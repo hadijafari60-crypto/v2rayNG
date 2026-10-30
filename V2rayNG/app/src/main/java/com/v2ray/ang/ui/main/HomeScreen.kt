@@ -1,6 +1,7 @@
 package com.v2ray.ang.ui.main
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -35,12 +36,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.v2ray.ang.dto.TrafficStatsUiState
@@ -143,13 +149,7 @@ fun HomeScreen(
                 contentAlignment = Alignment.Center,
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "⏻",
-                        color = Color.White,
-                        fontSize = 76.sp,
-                        lineHeight = 82.sp,
-                        fontWeight = FontWeight.Light,
-                    )
+                    PowerGlyph()
                     Spacer(Modifier.height(2.dp))
                     Text(
                         text = buttonLabel,
@@ -203,7 +203,7 @@ fun HomeScreen(
                             listOf(Color(0xFFF9FCFF), Color(0xFFEAF4FC))
                         )
                     )
-                    .padding(horizontal = 22.dp, vertical = 22.dp),
+                    .padding(horizontal = 18.dp, vertical = 22.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp),
             ) {
                 Row(
@@ -236,6 +236,7 @@ fun HomeScreen(
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                             )
                             if (selectedRank != null) {
                                 Spacer(Modifier.width(8.dp))
@@ -393,6 +394,29 @@ fun HomeScreen(
 }
 
 @Composable
+@Composable
+private fun PowerGlyph() {
+    Canvas(modifier = Modifier.size(72.dp)) {
+        val stroke = 6.dp.toPx()
+        drawArc(
+            color = Color.White,
+            startAngle = 45f,
+            sweepAngle = 270f,
+            useCenter = false,
+            topLeft = Offset(size.width * 0.15f, size.height * 0.15f),
+            size = Size(size.width * 0.7f, size.height * 0.7f),
+            style = Stroke(width = stroke, cap = StrokeCap.Round),
+        )
+        drawLine(
+            color = Color.White,
+            start = Offset(size.width / 2f, size.height * 0.08f),
+            end = Offset(size.width / 2f, size.height * 0.52f),
+            strokeWidth = stroke,
+            cap = StrokeCap.Round,
+        )
+    }
+}
+
 private fun HomeDivider() {
     Box(
         Modifier
@@ -426,7 +450,7 @@ private fun TrafficMetric(
     ) {
         Box(
             modifier = Modifier
-                .size(48.dp)
+                .size(38.dp)
                 .clip(CircleShape)
                 .background(symbolColor.copy(alpha = 0.13f)),
             contentAlignment = Alignment.Center,
@@ -441,15 +465,17 @@ private fun TrafficMetric(
             Text(
                 text = title,
                 color = HomeMuted,
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
+                maxLines = 2,
             )
             Text(
                 text = value,
                 color = HomeText,
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
