@@ -57,7 +57,7 @@ fun MainScreen(
     val isDarkTheme = LocalDarkTheme.current
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    var showHome by rememberSaveable { mutableStateOf(true) }
+    var showHome by remember { mutableStateOf(true) }
     var showSearch by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
     var showDelAllConfirm by remember { mutableStateOf(false) }
