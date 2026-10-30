@@ -50,7 +50,8 @@ fun MainScreen(
     val isHealthyRefreshing = uiState.isHealthyRefreshing
     val displayText = mainViewModel.formatStatus(uiState.status)
     val selectedGuid = uiState.selectedGuid
-    val homeServers by mainViewModel.serversForGroup(uiState.selectedGroupId).collectAsStateWithLifecycle()
+    val healthyGroupId = groups.firstOrNull { it.remarks == "Healthy" }?.id.orEmpty()
+    val homeServers by mainViewModel.serversForGroup(healthyGroupId).collectAsStateWithLifecycle()
     val doubleColumnDisplay = uiState.doubleColumnDisplay
     val confirmRemove = uiState.confirmRemove
     val shareQRCodeBitmap = uiState.shareQRCodeBitmap
