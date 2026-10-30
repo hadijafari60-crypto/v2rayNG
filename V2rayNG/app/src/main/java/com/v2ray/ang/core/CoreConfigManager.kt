@@ -98,29 +98,17 @@ object CoreConfigManager {
 
         val json = JsonUtil.parseString(raw)?.takeIf { it.isJsonObject }?.asJsonObject ?: return result
 
-        // Inject or remove traffic statistics configuration based on user preference
-        if (MmkvManager.decodeSettingsBool(AppConfig.PREF_SPEED_ENABLED) == true) {
-            if (!json.has("stats")) {
-                json.add("stats", JsonObject())
-            }
-            if (!json.has("policy")) {
-                val policyObj = JsonObject()
-                val systemObj = JsonObject()
-                systemObj.addProperty("statsOutboundUplink", true)
-                systemObj.addProperty("statsOutboundDownlink", true)
-                policyObj.add("system", systemObj)
-                json.add("policy", policyObj)
-            }
-        } else {
-            json.remove("stats")
-            // Keep user-defined policy levels, only strip the stats-related system block
-            json.get("policy")?.takeIf { it.isJsonObject }?.asJsonObject?.let { policy ->
-                policy.remove("system")
-                if (policy.entrySet().isEmpty()) {
-                    json.remove("policy")
-                }
-            }
+        // Traffic statistics are required by the home-screen card as well as the
+        // optional speed notification, so they must not depend on PREF_SPEED_ENABLED.
+        if (!json.has("stats") || !json.get("stats").isJsonObject) {
+            json.add("stats", JsonObject())
         }
+        val policyObj = json.get("policy")?.takeIf { it.isJsonObject }?.asJsonObject ?: JsonObject()
+        val systemObj = policyObj.get("system")?.takeIf { it.isJsonObject }?.asJsonObject ?: JsonObject()
+        systemObj.addProperty("statsOutboundUplink", true)
+        systemObj.addProperty("statsOutboundDownlink", true)
+        policyObj.add("system", systemObj)
+        json.add("policy", policyObj)
 
         if (!needTun()) {
             return JsonUtil.toJsonPretty(json)?.let { ConfigResult(true, configContext.guid, it) } ?: result
@@ -229,7 +217,7 @@ object CoreConfigManager {
         }
 
         applyObservability(v2rayConfig, balancerStrategies)
-        applySpeedDisabled(v2rayConfig)
+        // Keep core traffic counters enabled for the home-screen traffic card.
         resolveOutboundDomainsToHosts(v2rayConfig)
 
         return v2rayConfig
@@ -721,16 +709,6 @@ object CoreConfigManager {
                     mux = null
                 )
             )
-        }
-    }
-
-    /**
-     * Remove speed-test runtime sections when the feature is disabled.
-     */
-    private fun applySpeedDisabled(v2rayConfig: V2rayConfig) {
-        if (MmkvManager.decodeSettingsBool(AppConfig.PREF_SPEED_ENABLED) != true) {
-            v2rayConfig.stats = null
-            v2rayConfig.policy?.system = null
         }
     }
 
