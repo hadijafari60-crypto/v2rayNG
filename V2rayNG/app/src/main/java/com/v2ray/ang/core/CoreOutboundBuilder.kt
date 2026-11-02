@@ -41,6 +41,31 @@ object CoreOutboundBuilder {
         return outbound
     }
 
+    /**
+     * Resolve WireGuard DNS entries while preserving comma-separated defaults.
+     * When IPv6 is disabled and custom DNS has no IPv4 entry, use the IPv4 defaults.
+     */
+    internal fun resolveWireguardDns(
+        remoteDns: String?,
+        ipv6Enabled: Boolean,
+        defaultDns: String,
+    ): List<String> {
+        val defaultDnsList = defaultDns.split(",").map { it.trim() }
+        val rawDns = remoteDns
+            ?.split(",")
+            ?.map { it.trim() }
+            ?.filter { it.isNotEmpty() }
+            ?.ifEmpty { null }
+            ?: defaultDnsList
+
+        return if (ipv6Enabled) {
+            rawDns
+        } else {
+            rawDns.filter { !it.contains(":") }
+                .ifEmpty { defaultDnsList.filter { !it.contains(":") } }
+        }
+    }
+
     /** Applies global outbound options (mux, protocol-specific tweaks, etc.). */
     private fun updateOutboundWithGlobalSettings(outbound: OutboundBean): Boolean {
         try {
@@ -252,19 +277,11 @@ object CoreOutboundBuilder {
             ipv4Addresses.ifEmpty { listOf(AppConfig.WIREGUARD_LOCAL_ADDRESS_V4) }
         }
 
-        val rawDNS = profileItem.remoteDNS
-            ?.split(",")
-            ?.map { it.trim() }
-            ?.filter { it.isNotEmpty() }
-            ?.ifEmpty { null }
-            ?: listOf(AppConfig.WIREGUARD_LOCAL_REMOTE_DNS)
-
-        val remotes = if (MmkvManager.decodeSettingsBool(AppConfig.PREF_IPV6_ENABLED) == true) {
-            rawDNS
-        } else {
-            val ipv4Dns = rawDNS.filter { !it.contains(":") }
-            ipv4Dns.ifEmpty { listOf(AppConfig.WIREGUARD_LOCAL_REMOTE_DNS) }
-        }
+        val remotes = resolveWireguardDns(
+            remoteDns = profileItem.remoteDNS,
+            ipv6Enabled = MmkvManager.decodeSettingsBool(AppConfig.PREF_IPV6_ENABLED) == true,
+            defaultDns = AppConfig.WIREGUARD_LOCAL_REMOTE_DNS
+        )
 
         outboundBean?.settings?.let { wireguard ->
             wireguard.secretKey = profileItem.secretKey
