@@ -109,11 +109,11 @@ jobs:
         name: debug-apks
         path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/*/debug/*.apk
 
-    - name: Unit tests (Healthy guard and test coordinator)
+    - name: Unit tests and Kotlin compile
       shell: bash
       run: |
         cd ${{ github.workspace }}/V2rayNG
-        ./gradlew testPlaystoreDebugUnitTest --tests "com.v2ray.ang.ui.main.HealthyGuardTest" --tests "com.v2ray.ang.ui.main.MainTestRequestsTest" --tests "com.v2ray.ang.ui.main.NetworkStatusCheckGateTest" 2>&1 | tee ${{ github.workspace }}/test.log
+        ./gradlew :app:testPlaystoreDebugUnitTest :app:compilePlaystoreDebugKotlin 2>&1 | tee ${{ github.workspace }}/test.log
 
     - name: Publish build status
       if: always()
