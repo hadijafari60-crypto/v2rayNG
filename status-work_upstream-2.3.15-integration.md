@@ -1,7 +1,7 @@
-commit: 797eb8ca4b34ddac9bc61ab403fc24b89d46f738
+commit: 8c2bee052a567f39020051386233b7ed72fc6c2e
 ref: work/upstream-2.3.15-integration
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/41476462048
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/41476583467
 
 ## Kotlin compile errors (e: lines)
 
@@ -10,6 +10,7 @@ run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/41476462048
 ## Test result counts
 tests="1" skipped="0" failures="0" errors="0"
 tests="3" skipped="0" failures="0" errors="0"
+tests="2" skipped="0" failures="0" errors="0"
 tests="4" skipped="0" failures="0" errors="0"
 tests="3" skipped="0" failures="0" errors="0"
 tests="8" skipped="0" failures="0" errors="0"
@@ -58,10 +59,10 @@ w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/
 > Task :app:processPlaystoreDebugJavaRes
 > Task :app:mergePlaystoreDebugJavaResource
 > Task :app:dexBuilderPlaystoreDebug
-> Task :app:mergeProjectDexPlaystoreDebug
 > Task :app:packageFdroidDebug
 > Task :app:createFdroidDebugApkListingFileRedirect
 > Task :app:assembleFdroidDebug
+> Task :app:mergeProjectDexPlaystoreDebug
 > Task :app:packagePlaystoreDebug
 > Task :app:createPlaystoreDebugApkListingFileRedirect
 > Task :app:assemblePlaystoreDebug
@@ -75,7 +76,7 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 3m 22s
+BUILD SUCCESSFUL in 2m 55s
 82 actionable tasks: 82 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
 
@@ -101,8 +102,8 @@ Consider enabling configuration cache to speed up this build: https://docs.gradl
 > Task :app:prePlaystoreDebugUnitTestBuild UP-TO-DATE
 > Task :app:javaPreCompilePlaystoreDebugUnitTest
 > Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
-> Task :app:bundlePlaystoreDebugClassesToCompileJar
 > Task :app:bundlePlaystoreDebugClassesToRuntimeJar
+> Task :app:bundlePlaystoreDebugClassesToCompileJar
 > Task :app:compilePlaystoreDebugUnitTestKotlin
 > Task :app:compilePlaystoreDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :app:processPlaystoreDebugUnitTestJavaRes
@@ -117,6 +118,6 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 18s
+BUILD SUCCESSFUL in 16s
 28 actionable tasks: 6 executed, 22 up-to-date
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
