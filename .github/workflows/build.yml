@@ -15,6 +15,7 @@ on:
       - work/healthy-manager-home-screen
       - work/healthy-manager-from-build-117
       - work/home-screen-redesign-2026-10-30
+      - work/upstream-2.3.15-integration
 
 permissions:
   contents: write
