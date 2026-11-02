@@ -1,7 +1,7 @@
-commit: b6394c1e0c0db72cbf596fb4346a863ed6e414e1
+commit: 797eb8ca4b34ddac9bc61ab403fc24b89d46f738
 ref: work/upstream-2.3.15-integration
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/41476365708
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/41476462048
 
 ## Kotlin compile errors (e: lines)
 
@@ -54,14 +54,14 @@ w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/util/HttpUtil.kt:202:45 Unnecessary safe call on a non-null receiver of type 'ResponseBody'.
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/util/HttpUtil.kt:298:42 Elvis operator (?:) always returns the left operand of non-nullable type 'ResponseBody'.
 
-> Task :app:packageFdroidDebug
-> Task :app:createFdroidDebugApkListingFileRedirect
-> Task :app:assembleFdroidDebug
 > Task :app:compilePlaystoreDebugJavaWithJavac
 > Task :app:processPlaystoreDebugJavaRes
 > Task :app:mergePlaystoreDebugJavaResource
 > Task :app:dexBuilderPlaystoreDebug
 > Task :app:mergeProjectDexPlaystoreDebug
+> Task :app:packageFdroidDebug
+> Task :app:createFdroidDebugApkListingFileRedirect
+> Task :app:assembleFdroidDebug
 > Task :app:packagePlaystoreDebug
 > Task :app:createPlaystoreDebugApkListingFileRedirect
 > Task :app:assemblePlaystoreDebug
@@ -101,8 +101,8 @@ Consider enabling configuration cache to speed up this build: https://docs.gradl
 > Task :app:prePlaystoreDebugUnitTestBuild UP-TO-DATE
 > Task :app:javaPreCompilePlaystoreDebugUnitTest
 > Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
-> Task :app:bundlePlaystoreDebugClassesToRuntimeJar
 > Task :app:bundlePlaystoreDebugClassesToCompileJar
+> Task :app:bundlePlaystoreDebugClassesToRuntimeJar
 > Task :app:compilePlaystoreDebugUnitTestKotlin
 > Task :app:compilePlaystoreDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :app:processPlaystoreDebugUnitTestJavaRes
@@ -117,6 +117,6 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 19s
+BUILD SUCCESSFUL in 18s
 28 actionable tasks: 6 executed, 22 up-to-date
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
