@@ -23,6 +23,10 @@ import com.v2ray.ang.util.PackageUidResolver
 import com.v2ray.ang.util.Utils
 
 object CoreConfigManager {
+    /** Only the final DNS entry in a rule should set Xray's finalQuery flag. */
+    internal fun finalQueryForDnsServer(index: Int, lastIndex: Int): Boolean? =
+        if (index == lastIndex) true else null
+
     private var initConfigCache: String? = null
     private var initConfigCacheWithTun: String? = null
 
@@ -1020,7 +1024,7 @@ object CoreConfigManager {
                                 address = address,
                                 domains = rule.domain,
                                 skipFallback = true,
-                                finalQuery = if (dnsIndex == domesticDns.lastIndex) true else null,
+                                finalQuery = finalQueryForDnsServer(dnsIndex, domesticDns.lastIndex),
                                 tag = tag
                             )
                         )
@@ -1035,7 +1039,7 @@ object CoreConfigManager {
                             V2rayConfig.DnsBean.ServersBean(
                                 address = address,
                                 domains = rule.domain,
-                                finalQuery = if (index == remoteDns.lastIndex) true else null
+                                finalQuery = finalQueryForDnsServer(index, remoteDns.lastIndex)
                             )
                         )
                     }
