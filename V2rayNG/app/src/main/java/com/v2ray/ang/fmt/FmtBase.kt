@@ -41,8 +41,11 @@ open class FmtBase {
      * @return a map of query parameters
      */
     fun getQueryParam(uri: URI): Map<String, String> {
+        // Split on the first '=' only: values may themselves contain '=' (e.g. ECH padding).
+        // Ignore empty/malformed pairs so a trailing '&' cannot break the whole import.
         return uri.rawQuery.split("&")
-            .associate { it.split("=").let { (k, v) -> k to Utils.decodeURIComponent(v) } }
+            .filter { it.contains("=") }
+            .associate { it.split("=", limit = 2).let { (k, v) -> k to Utils.decodeURIComponent(v) } }
     }
 
     /**
