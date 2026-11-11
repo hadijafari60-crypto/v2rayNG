@@ -42,4 +42,34 @@ class UserAssetViewModelTest {
             rows.filter { it.assetUrl.locked == true }.map { it.guid },
         )
     }
+
+    @Test
+    fun replaceAssetFileMovesTempFileIntoPlace() {
+        val dir = java.nio.file.Files.createTempDirectory("v2rayng-asset-").toFile()
+        try {
+            val temp = java.io.File(dir, "asset_temp").apply { writeText("new") }
+            val target = java.io.File(dir, "asset")
+
+            assertTrue(viewModel.replaceAssetFile(temp, target))
+            assertEquals("new", target.readText())
+            assertTrue(!temp.exists())
+        } finally {
+            dir.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun replaceAssetFileReportsFailureAndRemovesTempFile() {
+        val dir = java.nio.file.Files.createTempDirectory("v2rayng-asset-").toFile()
+        try {
+            val temp = java.io.File(dir, "asset_temp").apply { writeText("new") }
+            val target = java.io.File(java.io.File(dir, "missing"), "asset")
+
+            assertTrue(!viewModel.replaceAssetFile(temp, target))
+            assertTrue(!temp.exists())
+            assertTrue(!target.exists())
+        } finally {
+            dir.deleteRecursively()
+        }
+    }
 }
