@@ -1,7 +1,7 @@
-commit: f6420503aea8a74a332949010e5e0535d8245862
+commit: df0c3340b89d6c315aca283ac05c5555b6c12381
 ref: master
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/43103362803
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/43103265023
 
 ## Kotlin compile errors (e: lines)
 
@@ -12,7 +12,6 @@ tests="1" skipped="0" failures="0" errors="0"
 tests="3" skipped="0" failures="0" errors="0"
 tests="2" skipped="0" failures="0" errors="0"
 tests="4" skipped="0" failures="0" errors="0"
-tests="3" skipped="0" failures="0" errors="0"
 tests="3" skipped="0" failures="0" errors="0"
 tests="8" skipped="0" failures="0" errors="0"
 tests="15" skipped="0" failures="0" errors="0"
@@ -40,6 +39,11 @@ tests="1" skipped="0" failures="0" errors="0"
 tests="9" skipped="0" failures="0" errors="0"
 
 ## Last 40 lines of build.log
+> Task :app:writePlaystoreDebugAppMetadata
+> Task :app:writePlaystoreDebugSigningConfigVersions
+> Task :app:mergeProjectDexFdroidDebug
+
+> Task :app:compilePlaystoreDebugKotlin
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:501:25 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:504:43 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:505:21 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
@@ -51,19 +55,14 @@ w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/util/HttpUtil.kt:202:45 Unnecessary safe call on a non-null receiver of type 'ResponseBody'.
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/util/HttpUtil.kt:298:42 Elvis operator (?:) always returns the left operand of non-nullable type 'ResponseBody'.
 
-> Task :app:compileFdroidDebugJavaWithJavac
-> Task :app:compressFdroidDebugJavaRes
-> Task :app:mergeFdroidDebugJavaResource
-> Task :app:dexBuilderFdroidDebug
-> Task :app:mergeProjectDexFdroidDebug
-> Task :app:compilePlaystoreDebugJavaWithJavac
-> Task :app:compressPlaystoreDebugJavaRes
-> Task :app:mergePlaystoreDebugJavaResource
-> Task :app:dexBuilderPlaystoreDebug
-> Task :app:mergeProjectDexPlaystoreDebug
 > Task :app:packageFdroidDebug
 > Task :app:createFdroidDebugApkListingFileRedirect
 > Task :app:assembleFdroidDebug
+> Task :app:compilePlaystoreDebugJavaWithJavac
+> Task :app:processPlaystoreDebugJavaRes
+> Task :app:mergePlaystoreDebugJavaResource
+> Task :app:dexBuilderPlaystoreDebug
+> Task :app:mergeProjectDexPlaystoreDebug
 > Task :app:packagePlaystoreDebug
 > Task :app:createPlaystoreDebugApkListingFileRedirect
 > Task :app:assemblePlaystoreDebug
@@ -77,11 +76,12 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 3m 4s
+BUILD SUCCESSFUL in 3m 25s
 82 actionable tasks: 82 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
 
 ## Last 40 lines of test.log
+> Task :app:mapPlaystoreDebugSourceSetPaths UP-TO-DATE
 > Task :app:processPlaystoreDebugNavigationResources UP-TO-DATE
 > Task :app:compilePlaystoreDebugNavigationResources UP-TO-DATE
 > Task :app:extractPlaystoreDebugSupportedLocales UP-TO-DATE
@@ -100,14 +100,13 @@ Consider enabling configuration cache to speed up this build: https://docs.gradl
 > Task :app:javaPreCompilePlaystoreDebug UP-TO-DATE
 > Task :app:compilePlaystoreDebugJavaWithJavac UP-TO-DATE
 > Task :app:prePlaystoreDebugUnitTestBuild UP-TO-DATE
+> Task :app:processPlaystoreDebugJavaRes UP-TO-DATE
 > Task :app:javaPreCompilePlaystoreDebugUnitTest
-> Task :app:compressPlaystoreDebugJavaRes UP-TO-DATE
-> Task :app:bundlePlaystoreDebugClassesToRuntimeJar
 > Task :app:bundlePlaystoreDebugClassesToCompileJar
+> Task :app:bundlePlaystoreDebugClassesToRuntimeJar
 > Task :app:compilePlaystoreDebugUnitTestKotlin
 > Task :app:compilePlaystoreDebugUnitTestJavaWithJavac NO-SOURCE
-> Task :app:compressPlaystoreDebugUnitTestJavaRes
-> Task :app:extractPlaystoreDebugUnitTestJavaRes
+> Task :app:processPlaystoreDebugUnitTestJavaRes
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 > Task :app:testPlaystoreDebugUnitTest
 
@@ -120,5 +119,5 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
 BUILD SUCCESSFUL in 17s
-29 actionable tasks: 7 executed, 22 up-to-date
+28 actionable tasks: 6 executed, 22 up-to-date
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
