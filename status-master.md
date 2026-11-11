@@ -1,7 +1,7 @@
-commit: 9fc52dfed9fb60f8e8f2979a888756fdc559b12b
+commit: 333405e8c32adb2020193ac6dd9cce4aab0e8652
 ref: master
 job status: success
-run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/43103240339
+run: https://github.com/hadijafari60-crypto/v2rayNG/actions/runs/43103193369
 
 ## Kotlin compile errors (e: lines)
 
@@ -39,9 +39,6 @@ tests="1" skipped="0" failures="0" errors="0"
 tests="9" skipped="0" failures="0" errors="0"
 
 ## Last 40 lines of build.log
-> Task :app:mergeFdroidDebugJavaResource
-
-> Task :app:compilePlaystoreDebugKotlin
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:501:25 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:504:43 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/handler/SettingsManager.kt:505:21 'var pinSHA256: String?' is deprecated. Use pinnedCA256.
@@ -53,16 +50,19 @@ w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/util/HttpUtil.kt:202:45 Unnecessary safe call on a non-null receiver of type 'ResponseBody'.
 w: file:///home/runner/work/v2rayNG/v2rayNG/V2rayNG/app/src/main/java/com/v2ray/ang/util/HttpUtil.kt:298:42 Elvis operator (?:) always returns the left operand of non-nullable type 'ResponseBody'.
 
-> Task :app:dexBuilderFdroidDebug
-> Task :app:mergeProjectDexFdroidDebug
 > Task :app:compilePlaystoreDebugJavaWithJavac
+> Task :app:compileFdroidDebugJavaWithJavac
+> Task :app:processFdroidDebugJavaRes
+> Task :app:mergeFdroidDebugJavaResource
+> Task :app:dexBuilderFdroidDebug
 > Task :app:processPlaystoreDebugJavaRes
+> Task :app:mergeProjectDexFdroidDebug
 > Task :app:mergePlaystoreDebugJavaResource
 > Task :app:dexBuilderPlaystoreDebug
+> Task :app:mergeProjectDexPlaystoreDebug
 > Task :app:packageFdroidDebug
 > Task :app:createFdroidDebugApkListingFileRedirect
 > Task :app:assembleFdroidDebug
-> Task :app:mergeProjectDexPlaystoreDebug
 > Task :app:packagePlaystoreDebug
 > Task :app:createPlaystoreDebugApkListingFileRedirect
 > Task :app:assemblePlaystoreDebug
@@ -76,7 +76,7 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 2m 30s
+BUILD SUCCESSFUL in 3m 4s
 82 actionable tasks: 82 executed
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
 
@@ -118,6 +118,6 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 16s
+BUILD SUCCESSFUL in 17s
 28 actionable tasks: 6 executed, 22 up-to-date
 Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.2/userguide/configuration_cache_enabling.html
