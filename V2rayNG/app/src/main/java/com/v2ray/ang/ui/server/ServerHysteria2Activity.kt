@@ -2,6 +2,19 @@ package com.v2ray.ang.ui.server
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import com.v2ray.ang.extension.toast
+import com.v2ray.ang.extension.toastSuccess
+import com.v2ray.ang.handler.CertificateFingerprintManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.res.stringResource
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
@@ -46,6 +59,8 @@ class ServerHysteria2Activity : BaseServerActivity() {
 
     @Composable
     private fun Hysteria2ProtocolFields(state: ServerUiState) {
+        val context = LocalContext.current
+        val scope = rememberCoroutineScope()
         FormTextField(
             label = stringResource(R.string.server_lab_id3),
             value = state.password,
@@ -104,6 +119,43 @@ class ServerHysteria2Activity : BaseServerActivity() {
             state.finalMask,
             { state.finalMask = it }
         )
+
+        Button(
+            onClick = {
+                if (state.address.isBlank()) {
+                    context.toast(R.string.server_lab_address)
+                    return@Button
+                }
+                if (
+                    state.configType != EConfigType.HYSTERIA2 &&
+                    (state.port.toIntOrNull() ?: 0) <= 0
+                ) {
+                    context.toast(R.string.server_lab_port)
+                    return@Button
+                }
+                val temp = state.toProfileItem(initialConfig)
+                scope.launch {
+                    state.isFetchingCert = true
+                    try {
+                        val sha256 = withContext(Dispatchers.IO) {
+                            CertificateFingerprintManager.fetchForManualFill(temp)
+                        }
+                        if (sha256.isNullOrBlank()) {
+                            context.toast(R.string.toast_fetch_cert_sha256_failed)
+                        } else {
+                            state.pinnedCA256 = sha256
+                            context.toastSuccess(R.string.toast_fetch_cert_sha256_success)
+                        }
+                    } finally {
+                        state.isFetchingCert = false
+                    }
+                }
+            },
+            enabled = !state.isFetchingCert,
+            modifier = Modifier.padding(start = 16.dp)
+        ) {
+            Text(stringResource(R.string.pinned_ca256_action_fetch))
+        }
     }
 }
 
